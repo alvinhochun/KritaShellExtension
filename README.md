@@ -4,6 +4,12 @@ Krita Shell Extension
 Shell Extension to provide various information about Krita files in
 Windows Explorer.
 
+
+License
+-------
+
+The MIT License
+
 Copyright (c) 2016 Alvin Wong <alvinhochun@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
