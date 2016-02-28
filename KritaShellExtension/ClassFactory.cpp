@@ -33,7 +33,8 @@
 
 using namespace kritashellex;
 
-ClassFactory::ClassFactory() :
+ClassFactory::ClassFactory(Type type) :
+	m_type(type),
 	m_refCount(1)
 {
 	IncDllRef();
@@ -69,17 +70,23 @@ IFACEMETHODIMP_(ULONG) ClassFactory::Release()
 
 IFACEMETHODIMP ClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppv)
 {
-	HRESULT hr;
 	if (pUnkOuter) {
 		return CLASS_E_NOAGGREGATION;
 	}
-	KritaThumbnailProvider *pExt = new (std::nothrow) KritaThumbnailProvider();
-	if (!pExt) {
-		return E_OUTOFMEMORY;
+	switch (m_type) {
+	case CLASS_THUMBNAIL:
+	{
+		KritaThumbnailProvider *pExt = new (std::nothrow) KritaThumbnailProvider();
+		if (!pExt) {
+			return E_OUTOFMEMORY;
+		}
+		HRESULT hr = pExt->QueryInterface(riid, ppv);
+		pExt->Release();
+		return hr;
 	}
-	hr = pExt->QueryInterface(riid, ppv);
-	pExt->Release();
-	return hr;
+	default:
+		return E_UNEXPECTED;
+	}
 }
 
 IFACEMETHODIMP ClassFactory::LockServer(BOOL fLock)

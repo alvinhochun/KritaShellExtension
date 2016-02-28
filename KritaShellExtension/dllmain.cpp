@@ -91,8 +91,8 @@ STDAPI DllRegisterServer(void)
 		return HRESULT_FROM_WIN32(GetLastError());
 	}
 
-	// Register thumbnail handler
-	REGKEY_SUBKEY_AND_VALUE keys[] = {
+	// Register thumbnail provider
+	REGKEY_SUBKEY_AND_VALUE keys_thumbnailprovider[] = {
 		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaThumbnailProvider, nullptr, REG_SZ, (DWORD_PTR)L"Krita Thumbnail Provider" },
 #if _DEBUG
 		// For easier debugging only!
@@ -103,7 +103,7 @@ STDAPI DllRegisterServer(void)
 		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaThumbnailProvider L"\\InprocServer32", L"ThreadingModel", REG_SZ, (DWORD_PTR)L"Apartment" },
 		{ HKEY_CLASSES_ROOT, L".kra\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}", nullptr, REG_SZ, (DWORD_PTR)szCLSID_KritaThumbnailProvider },
 	};
-	hr = CreateRegistryKeys(keys, ARRAYSIZE(keys));
+	hr = CreateRegistryKeys(keys_thumbnailprovider, ARRAYSIZE(keys_thumbnailprovider));
 	if (FAILED(hr)) {
 		// Undo the changes?...
 		// TODO: Keep track of what to actually delete
@@ -150,18 +150,21 @@ STDAPI DllCanUnloadNow(void)
 
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 {
-	HRESULT hr;
+	using namespace kritashellex;
 
-	if (!IsEqualCLSID(CLSID_KritaThumbnailProvider, rclsid)) {
+	ClassFactory::Type type;
+	if (IsEqualCLSID(CLSID_KritaThumbnailProvider, rclsid)) {
+		type = ClassFactory::CLASS_THUMBNAIL;
+	} else {
 		return CLASS_E_CLASSNOTAVAILABLE;
 	}
 
-	kritashellex::ClassFactory *pClassFactory = new (std::nothrow) kritashellex::ClassFactory();
+	ClassFactory *pClassFactory = new (std::nothrow) kritashellex::ClassFactory(type);
 	if (!pClassFactory) {
 		return E_OUTOFMEMORY;
 	}
 
-	hr = pClassFactory->QueryInterface(riid, ppv);
+	HRESULT hr = pClassFactory->QueryInterface(riid, ppv);
 	pClassFactory->Release();
 	return hr;
 }

@@ -31,11 +31,15 @@ namespace kritashellex
 class ClassFactory :
 	public IClassFactory
 {
+public:
+	enum Type { CLASS_THUMBNAIL, CLASS_PROPERTY };
+
 private:
+	Type m_type;
 	unsigned long m_refCount;
 
 public:
-	ClassFactory();
+	explicit ClassFactory(Type type);
 
 	// Implements IUnknown
 
@@ -50,6 +54,9 @@ public:
 
 protected:
 	~ClassFactory();
+
+private:
+	ClassFactory() = delete;
 };
 
 } // namespace kritashellex

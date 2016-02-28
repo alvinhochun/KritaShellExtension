@@ -121,7 +121,7 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	*pdwAlpha = WTSAT_ARGB;
 
 	if (!m_pStream) {
-		return E_POINTER;
+		return E_UNEXPECTED;
 	}
 
 	HGLOBAL hImageContent;

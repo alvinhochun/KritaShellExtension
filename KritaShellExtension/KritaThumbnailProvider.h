@@ -58,7 +58,7 @@ protected:
 	~KritaThumbnailProvider();
 
 private:
-	static HRESULT getThumbnailPngFromArchive(IStream *pstream, UINT cx, HGLOBAL &hImageContent_out);
+	static HRESULT getThumbnailPngFromArchive(IStream *pStream, UINT cx, HGLOBAL &hImageContent_out);
 	static HRESULT getThumbnailFromPngStream(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 	static HRESULT getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 };
