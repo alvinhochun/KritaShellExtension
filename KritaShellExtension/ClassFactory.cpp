@@ -23,6 +23,7 @@
 
 #include "dllmain.h"
 #include "KritaThumbnailProvider.h"
+#include "KritaPropertyHandler.h"
 #include "ClassFactory.h"
 
 #include <new>
@@ -77,6 +78,16 @@ IFACEMETHODIMP ClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, vo
 	case CLASS_THUMBNAIL:
 	{
 		KritaThumbnailProvider *pExt = new (std::nothrow) KritaThumbnailProvider();
+		if (!pExt) {
+			return E_OUTOFMEMORY;
+		}
+		HRESULT hr = pExt->QueryInterface(riid, ppv);
+		pExt->Release();
+		return hr;
+	}
+	case CLASS_PROPERTY:
+	{
+		KritaPropertyHandler *pExt = new (std::nothrow) KritaPropertyHandler();
 		if (!pExt) {
 			return E_OUTOFMEMORY;
 		}

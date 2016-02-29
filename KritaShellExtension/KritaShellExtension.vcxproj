@@ -104,7 +104,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>ExportFunctions.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\deps\Release-x86\zlibstatic.lib;..\deps\Release-x86\zipstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\deps\Debug-x86\zlibstatic.lib;..\deps\Debug-x86\zipstatic.lib;..\deps\Debug-x86\tinyxml2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,7 +122,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>ExportFunctions.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\deps\Release-x64\zlibstatic.lib;..\deps\Release-x64\zipstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\deps\Debug-x64\zlibstatic.lib;..\deps\Debug-x64\zipstatic.lib;..\deps\Debug-x64\tinyxml2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,7 +142,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>ExportFunctions.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\deps\Release-x86\zlibstatic.lib;..\deps\Release-x86\zipstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\deps\Release-x86\zlibstatic.lib;..\deps\Release-x86\zipstatic.lib;..\deps\Release-x86\tinyxml2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
@@ -163,12 +163,13 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>ExportFunctions.def</ModuleDefinitionFile>
-      <AdditionalDependencies>..\deps\Release-x64\zlibstatic.lib;..\deps\Release-x64\zipstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\deps\Release-x64\zlibstatic.lib;..\deps\Release-x64\zipstatic.lib;..\deps\Release-x64\tinyxml2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="dllmain.h" />
+    <ClInclude Include="KritaPropertyHandler.h" />
     <ClInclude Include="KritaThumbnailProvider.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="zip_source_IStream.h" />
@@ -189,6 +190,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="KritaPropertyHandler.cpp" />
     <ClCompile Include="KritaThumbnailProvider.cpp" />
     <ClCompile Include="zip_source_IStream.cpp" />
   </ItemGroup>

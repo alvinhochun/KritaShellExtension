@@ -39,6 +39,13 @@
 const CLSID CLSID_KritaThumbnailProvider =
 { 0xc6806289, 0xd605, 0x4afe, { 0xa7, 0x78, 0xbc, 0x58, 0x43, 0x3, 0xdb, 0x9a } };
 
+// CLSID of KritaPropertyHandler
+// {C8E5509D-6F68-480C-8A41-DB64AECE94C6}
+#define szCLSID_KritaPropertyHandler L"{C8E5509D-6F68-480C-8A41-DB64AECE94C6}"
+const CLSID CLSID_KritaPropertyHandler =
+{ 0xc8e5509d, 0x6f68, 0x480c,{ 0x8a, 0x41, 0xdb, 0x64, 0xae, 0xce, 0x94, 0xc6 } };
+
+
 namespace
 {
 
@@ -115,6 +122,31 @@ STDAPI DllRegisterServer(void)
 		return hr;
 	}
 
+	// Register property handler
+	REGKEY_SUBKEY_AND_VALUE keys_propertyHandler[] = {
+		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler, nullptr, REG_SZ, (DWORD_PTR)L"Krita Property Handler" },
+#if _DEBUG
+		// For easier debugging only!
+		// Make sure to unregister and re-register extension to remove this key when switching between config
+	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler, L"DisableProcessIsolation", REG_DWORD, 1 },
+#endif
+	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", nullptr, REG_SZ, (DWORD_PTR)szModule },
+	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", L"ThreadingModel", REG_SZ, (DWORD_PTR)L"Apartment" },
+	{ HKEY_CLASSES_ROOT, L".kra", L"PerceivedType", REG_SZ, (DWORD_PTR)L"Image" },
+	{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra", nullptr, REG_SZ, (DWORD_PTR)szCLSID_KritaPropertyHandler },
+	};
+	hr = CreateRegistryKeys(keys_propertyHandler, ARRAYSIZE(keys_propertyHandler));
+	if (FAILED(hr)) {
+		// Undo the changes?...
+		// TODO: Keep track of what to actually delete
+		REGKEY_DELETEKEY delete_keys[] = {
+			{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra" },
+			{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler },
+		};
+		DeleteRegistryKeys(delete_keys, ARRAYSIZE(delete_keys)); // Don't care if this fails
+		return hr;
+	}
+
 	// Notify shell about file association changes
 	SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
@@ -131,6 +163,7 @@ STDAPI DllUnregisterServer(void)
 
 	REGKEY_DELETEKEY keys[] = {
 		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaThumbnailProvider },
+		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler },
 	};
 	HRESULT hr = DeleteRegistryKeys(keys, ARRAYSIZE(keys));
 
@@ -138,6 +171,7 @@ STDAPI DllUnregisterServer(void)
 	// One of the 32-bit and 64-bit versions could have already deleted this.
 	REGKEY_DELETEKEY keys2[] = {
 		{ HKEY_CLASSES_ROOT, L".kra\\shellex\\{E357FCCD-A995-4576-B01F-234630154E96}" },
+		{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra" },
 	};
 	DeleteRegistryKeys(keys2, ARRAYSIZE(keys2));
 	return hr;
@@ -155,6 +189,8 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv)
 	ClassFactory::Type type;
 	if (IsEqualCLSID(CLSID_KritaThumbnailProvider, rclsid)) {
 		type = ClassFactory::CLASS_THUMBNAIL;
+	} else if (IsEqualCLSID(CLSID_KritaPropertyHandler, rclsid)) {
+		type = ClassFactory::CLASS_PROPERTY;
 	} else {
 		return CLASS_E_CLASSNOTAVAILABLE;
 	}

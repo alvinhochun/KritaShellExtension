@@ -36,7 +36,7 @@ Acknowledgement
 ---------------
 
 This software uses the libzip library, which in turn uses the zlib
-library.
+library. The TinyXML-2 library is also used.
 
 For the license of libzip, please refer to `COPYING_libzip.txt`.
 
@@ -76,6 +76,8 @@ follow these steps:
 4. (For 64-bit system only:) Execute `regsvr32 /u kritashellex64.dll`
 5. Delete the two dll files.
 
+*TODO*: Registry changes for properties from the property handler
+
 
 Using
 -----
@@ -90,9 +92,10 @@ Building From Source
 
 The project Has been compiled and tested with Visual Studio 2015,
 while statically linked with zlib and libzip. The included prebuilt
-zlib (v1.2.8) and libzip (v1.1.2) static libraries were compiled with
-the Visual Studio 2015 build tools, so if you don't plan on compiling
-zlib and libzip yourself, you should use Visual Studio 2015 to ensure
+zlib (v1.2.8), libzip (v1.1.2) and TinyXML-2 (v3.0.0, git HEAD commit
+d175e9d) static libraries were compiled with the Visual Studio 2015
+build tools, so if you don't plan on compiling zlib, libzip and
+TinyXML-2 yourself, you should use Visual Studio 2015 to ensure
 compatibility.
 
 If you would like to build both libraries from source also, please
@@ -124,24 +127,32 @@ built, therefore you should call CMake with these parameters:
     -DZLIB_LIBRARY=<path_to_zlibstatic.lib>
     -DZLIB_INCLUDE_DIR=<path_to_dir_containing_zlib_headers>
 
-After both libraries are successfully built, gather the following
+Now build TinyXML-2. Pass the following parameters to CMake to build
+the static library:
+
+    -DBUILD_SHARED_LIBS=0
+    -DBUILD_STATIC_LIBS=1
+
+After all the libraries are successfully built, gather the following
 files and place them as stated:
 
     \- deps\
 	  \- Release-x[86|64]\
 		|- zlibstatic.lib  - zlib static lib output
 	    |- zipstatic.lib   - libzip static lib output
+		|- tinyxml2.lib    - TinyXML-2 static lib output
 		\- include\
 		  |- zlib.h        - zlib header
 		  |- zconf.h       - zlib config header, under build dir
 		  |- zip.h         - libzip header, under lib\
-		  \- zipconf.h     - libzip config header, under build dir
+		  |- zipconf.h     - libzip config header, under build dir
+		  \- tinyxml2.h    - TinyXML-2 header
 
 After that, you can build the main project with MSBuild or within
 Visual Studio 2015 directly.
 
 The output would be found inside `output\`, namely
-`kritashellex32.dll` and `kritashellex64.dll` respectively.
+`kritashellex32.dll` and `kritashellex64.dll`.
 
 
 Additional Information
@@ -150,6 +161,10 @@ Additional Information
 ### KritaThumbnailProvider ###
 
 Provides preview thumbnail for .kra files.
+
+### KritaPropertyHandler ###
+
+Provides image file properties for .kra files.
 
 ### zip_source_IStream ###
 
