@@ -297,7 +297,7 @@ HRESULT KritaPropertyHandler::parseMaindocXml(std::unique_ptr<char[]> &&pMaindoc
 		return E_NOTIMPL;
 	}
 
-	static_assert(UINT_MAX <= 999999999, "unsigned int is somehow no longer 10-char max");
+	static_assert(UINT_MAX <= 9999999999, "unsigned int is somehow no longer 10-char max");
 	WCHAR wszDimensions[24]; // 2x 10-char-max int, 3x char, 1x null
 
 	HRESULT hr = StringCbPrintfW(wszDimensions, sizeof(wszDimensions), L"%u x %u", props.width, props.height);
