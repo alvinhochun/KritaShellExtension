@@ -35,10 +35,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Acknowledgement
 ---------------
 
-This software uses the libzip library, which in turn uses the zlib
-library. The TinyXML-2 library is also used.
+This software uses the following libraries:
 
-For the license of libzip, please refer to `COPYING_libzip.txt`.
+- libzip - BSD-like license - http://www.nih.at/libzip/
+- zlib - zlib license - http://www.zlib.net/
+- TinyXML-2 - zlib license https://github.com/leethomason/tinyxml2
+
+For the license information on these libraries, you can either refer
+to the URLs shown above, or refer to the corresponding `COPYING` files
+included in the source tree and/or binary release package.
 
 
 System Requirements
@@ -48,7 +53,7 @@ This shell extension requires Windows Vista or above. It does not
 work on Windows XP and previous versions of Windows.
 
 The binaries were compiled using Visual Studio 2015, so the Visual
-Studio Runtime 2015 would be needed for them to run properly.
+C++ Runtime Libraries 2015 would be needed for this to run properly.
 
 
 Installing
