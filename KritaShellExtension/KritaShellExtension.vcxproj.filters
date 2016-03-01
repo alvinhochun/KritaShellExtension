@@ -24,9 +24,6 @@
     <ClInclude Include="ClassFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="zip_source_IStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>

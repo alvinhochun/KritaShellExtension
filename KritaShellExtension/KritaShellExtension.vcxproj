@@ -171,7 +171,6 @@
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="KritaPropertyHandler.h" />
     <ClInclude Include="KritaThumbnailProvider.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="zip_source_IStream.h" />
   </ItemGroup>
   <ItemGroup>
