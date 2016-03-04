@@ -95,69 +95,44 @@ Dialogs) without needing further actions.
 Building From Source
 --------------------
 
-The project Has been compiled and tested with Visual Studio 2015,
-while statically linked with zlib and libzip. The included prebuilt
-zlib (v1.2.8), libzip (v1.1.2) and TinyXML-2 (v3.0.0, git HEAD commit
-d175e9d) static libraries were compiled with the Visual Studio 2015
-build tools, so if you don't plan on compiling zlib, libzip and
-TinyXML-2 yourself, you should use Visual Studio 2015 to ensure
-compatibility.
+The project has been compiled and tested with CMake 3.4.3 using both
+NMake Makefile and Visual Studio 2015.
 
-If you would like to build both libraries from source also, please
-refer to the following instructions. Note that you'll need to do the
-x86 build and x64 build separately.
+External libraries should be automatically downloaded and compiled by
+the build system. You can also choose to download their sources
+manually by replacing `deps/CMakeLists.txt` with
+`deps/CMakeLists_uselocal.txt`. Note that you may need to change the
+CMakeLists.txt of libzip manually to add the static library target.
 
-I used CMake with the NMake Makefile generator to build both zlib and
-libzip. To build the static library of libzip, you may have to add
-the target manually by editing `lib\CMakeLists.txt`. Simply copy the
-line with:
+You have to build the 32-bit and 64-bot versions separately. Using an
+out-of-source build location is recommended.
 
-    ADD_LIBRARY(zip SHARED [...])
+Example build commands:
 
-and change it to look like this:
+- Visual Studio 2015 64-bit build:
 
-    ADD_LIBRARY(zipstatic STATIC [...])
+	cmake -G "Visual Studio 14 2015 Win64" <path_to_source>
+	cmake --build . --config RelWithDebInfo
 
-When building both libraries, remember to pass the parameter
-`-DCMAKE_BUILD_TYPE=Release` to CMake in order to build the libraries
-with release config.
+- NMake (within Visual Studio command prompt):
 
-You should build zlib first. After a successful build, gather the
-header files `zlib.h` and `zconf.h` in one location (say, `include\`
-under the build directory.) They will be used when building libzip.
+	cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo <path_to_source>
+	cmake --build .
 
-Now build libzip. It should link against the zlib that you've just
-built, therefore you should call CMake with these parameters:
+Currently, the project does not include an install target. You will
+have to copy the output manually or using an external script. The
+output DLL is located at
 
-    -DZLIB_LIBRARY=<path_to_zlibstatic.lib>
-    -DZLIB_INCLUDE_DIR=<path_to_dir_containing_zlib_headers>
+	`<build_dir>\KritaShellExtension\<config>\kritashellex.dll`
 
-Now build TinyXML-2. Pass the following parameters to CMake to build
-the static library:
+or
 
-    -DBUILD_SHARED_LIBS=0
-    -DBUILD_STATIC_LIBS=1
+	`<build_dir>\KritaShellExtension\kritashellex.dll`
 
-After all the libraries are successfully built, gather the following
-files and place them as stated:
+depending on the generator you use.
 
-    \- deps\
-	  \- Release-x[86|64]\
-		|- zlibstatic.lib  - zlib static lib output
-	    |- zipstatic.lib   - libzip static lib output
-		|- tinyxml2.lib    - TinyXML-2 static lib output
-		\- include\
-		  |- zlib.h        - zlib header
-		  |- zconf.h       - zlib config header, under build dir
-		  |- zip.h         - libzip header, under lib\
-		  |- zipconf.h     - libzip config header, under build dir
-		  \- tinyxml2.h    - TinyXML-2 header
-
-After that, you can build the main project with MSBuild or within
-Visual Studio 2015 directly.
-
-The output would be found inside `output\`, namely
-`kritashellex32.dll` and `kritashellex64.dll`.
+You may want to rename the output files into `kritashellex32.dll` and
+`kritashellex64.dll` to avoid confusion.
 
 
 Additional Information
@@ -169,7 +144,8 @@ Provides preview thumbnail for .kra files.
 
 ### KritaPropertyHandler ###
 
-Provides image file properties for .kra files.
+Provides image file properties for .kra files. Additional registry
+changes are needed for it to work the best.
 
 ### zip_source_IStream ###
 
