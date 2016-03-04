@@ -128,12 +128,12 @@ STDAPI DllRegisterServer(void)
 #if _DEBUG
 		// For easier debugging only!
 		// Make sure to unregister and re-register extension to remove this key when switching between config
-	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler, L"DisableProcessIsolation", REG_DWORD, 1 },
+		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler, L"DisableProcessIsolation", REG_DWORD, 1 },
 #endif
-	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", nullptr, REG_SZ, (DWORD_PTR)szModule },
-	{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", L"ThreadingModel", REG_SZ, (DWORD_PTR)L"Apartment" },
-	{ HKEY_CLASSES_ROOT, L".kra", L"PerceivedType", REG_SZ, (DWORD_PTR)L"Image" },
-	{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra", nullptr, REG_SZ, (DWORD_PTR)szCLSID_KritaPropertyHandler },
+		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", nullptr, REG_SZ, (DWORD_PTR)szModule },
+		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", L"ThreadingModel", REG_SZ, (DWORD_PTR)L"Apartment" },
+		{ HKEY_CLASSES_ROOT, L".kra", L"PerceivedType", REG_SZ, (DWORD_PTR)L"Image" },
+		{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra", nullptr, REG_SZ, (DWORD_PTR)szCLSID_KritaPropertyHandler },
 	};
 	hr = CreateRegistryKeys(keys_propertyHandler, ARRAYSIZE(keys_propertyHandler));
 	if (FAILED(hr)) {

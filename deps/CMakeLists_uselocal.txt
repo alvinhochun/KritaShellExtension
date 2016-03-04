@@ -1,0 +1,44 @@
+project(kritashellex-deps)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	if(NOT MSVC)
+		message(FATAL_ERROR "kritashellex does not support build environments other than MSVC")
+	endif()
+else()
+	message(FATAL_ERROR "kritashellex does not support non-Windows systems")
+endif()
+
+include(ExternalProject)
+
+ExternalProject_Add(dep_zlib
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/zlib"
+	CMAKE_ARGS
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+		-DCMAKE_INSTALL_PREFIX=${PREFIX_DEPS}
+)
+# Removes the INSTALL_*_DIR variables to force it to regenerate the install paths
+ExternalProject_Add_Step(dep_zlib dep_zlib_refresh_install_cache
+	WORKING_DIRECTORY <BINARY_DIR>
+	COMMAND ${CMAKE_COMMAND}
+		-UINSTALL_*_DIR
+		<BINARY_DIR>
+	DEPENDEES configure
+	DEPENDERS build
+)
+
+ExternalProject_Add(dep_libzip
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/libzip"
+	DEPENDS dep_zlib
+	CMAKE_ARGS
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+		-DCMAKE_INSTALL_PREFIX=${PREFIX_DEPS}
+)
+
+ExternalProject_Add(dep_tinyxml2
+	SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/tinyxml2"
+	CMAKE_ARGS
+		-DBUILD_SHARED_LIBS=OFF
+		-DBUILD_STATIC_LIBS=ON
+		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+		-DCMAKE_INSTALL_PREFIX=${PREFIX_DEPS}
+)

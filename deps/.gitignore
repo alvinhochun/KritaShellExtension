@@ -1,0 +1,5 @@
+*
+!.gitignore
+!CMakeLists.txt
+!CMakeLists_uselocal.txt
+!patch_libzip-1.1.2.cmd
