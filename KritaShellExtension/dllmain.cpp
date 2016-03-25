@@ -132,7 +132,7 @@ STDAPI DllRegisterServer(void)
 #endif
 		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", nullptr, REG_SZ, (DWORD_PTR)szModule },
 		{ HKEY_CLASSES_ROOT, L"CLSID\\" szCLSID_KritaPropertyHandler L"\\InprocServer32", L"ThreadingModel", REG_SZ, (DWORD_PTR)L"Apartment" },
-		{ HKEY_CLASSES_ROOT, L".kra", L"PerceivedType", REG_SZ, (DWORD_PTR)L"Image" },
+		//{ HKEY_CLASSES_ROOT, L".kra", L"PerceivedType", REG_SZ, (DWORD_PTR)L"Image" }, // This should be done by the installer
 		{ HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PropertySystem\\PropertyHandlers\\.kra", nullptr, REG_SZ, (DWORD_PTR)szCLSID_KritaPropertyHandler },
 	};
 	hr = CreateRegistryKeys(keys_propertyHandler, ARRAYSIZE(keys_propertyHandler));
