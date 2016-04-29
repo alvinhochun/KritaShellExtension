@@ -74,6 +74,8 @@ Section "Thing"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
+	WriteRegStr HKLM "Software\Krita\ShellExtension" \
+	                 "InstallDir" "$INSTDIR"
 SectionEnd
 
 !macro Section_Main_Contents Bits
@@ -133,7 +135,6 @@ Section "Main_associate"
 SectionEnd
 
 Section "Main_common"
-	#SetRegView 32 # common
 	MessageBox MB_OK "common"
 	File krita.ico
 	# Register as IThumbnailProvider
@@ -159,7 +160,6 @@ Section "main_refreshShell"
 SectionEnd
 
 Section "un.Main_common"
-	#SetRegView 32 # common
 	MessageBox MB_OK "common"
 	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
@@ -214,9 +214,12 @@ Section "un.Main_associate"
 SectionEnd
 
 Section "un.Thing"
-	SetRegView 32
 	MessageBox MB_OK "Thing"
-	SetRegView 64
+	${If} ${RunningX64}
+		SetRegView 64
+	${EndIf}
+	DeleteRegKey HKLM "Software\Krita\ShellExtension"
+	DeleteRegKey /ifempty HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
 	Delete $INSTDIR\uninstall.exe
 SectionEnd
