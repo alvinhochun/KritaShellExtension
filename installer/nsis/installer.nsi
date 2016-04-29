@@ -22,9 +22,10 @@ Page Custom func_KritaConfigPage_Show
 !insertmacro MUI_LANGUAGE "English"
 
 !include x64.nsh
-!include "KritaConfigPage.nsh"
-!include "FileExists2.nsh"
-!include "constants.nsh"
+
+!include "include\constants.nsh"
+!include "include\KritaConfigPage.nsh"
+!include "include\FileExists2.nsh"
 
 # ----[[
 
