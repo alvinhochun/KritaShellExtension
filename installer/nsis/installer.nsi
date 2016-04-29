@@ -66,7 +66,9 @@ Var KritaExePath
 Section "Thing"
 	MessageBox MB_OK "Thing"
 	SetOutPath $INSTDIR
-	SetRegView 64
+	${If} ${RunningX64}
+		SetRegView 64
+	${EndIf}
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "DisplayName" "Krita Shell Integration"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
@@ -74,48 +76,35 @@ Section "Thing"
 	WriteUninstaller $INSTDIR\uninstall.exe
 SectionEnd
 
-Section "Main_x64" SEC_x64
-	SetRegView 64
-	MessageBox MB_OK "x64"
-	File kritashellex64.dll
+!macro Section_Main_Contents Bits
+	SetRegView ${Bits}
+	File kritashellex${Bits}.dll
 	# Register Thumbnail Provider
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
 	                 "" "Krita Thumbnail Provider"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex64.dll"
+	                 "" "$INSTDIR\kritashellex${Bits}.dll"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
 	                 "ThreadingModel" "Apartment"
 	# Register Property Handler
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}" \
 	                 "" "Krita Property Handler"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex64.dll"
+	                 "" "$INSTDIR\kritashellex${Bits}.dll"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
 	                 "ThreadingModel" "Apartment"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
 	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
+!macroend
+
+Section "Main_x64" SEC_x64
+	MessageBox MB_OK "x64"
+	!insertmacro Section_Main_Contents 64
 SectionEnd
 
 Section "Main_x86"
-	SetRegView 32
 	MessageBox MB_OK "x86"
-	File kritashellex32.dll
-	# Register Thumbnail Provider
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
-	                 "" "Krita Thumbnail Provider"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex64.dll"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "ThreadingModel" "Apartment"
-	# Register Property Handler
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}" \
-	                 "" "Krita Property Handler"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex64.dll"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "ThreadingModel" "Apartment"
-	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
-	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
+	!insertmacro Section_Main_Contents 32
 SectionEnd
 
 Section "Main_associate"
@@ -180,56 +169,39 @@ Section "un.Main_common"
 	Delete $INSTDIR\krita.ico
 SectionEnd
 
-Section "un.Main_x64" SEC_un_x64
-	SetRegView 64
-	MessageBox MB_OK "x64"
+!macro UnSection_Main_Contents Bits
+	SetRegView ${Bits}
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	${RefreshShell}
 	Sleep 200
 	# Try deleting, rename if failed
-	Delete $INSTDIR\kritashellex64.dll
+	Delete $INSTDIR\kritashellex${Bits}.dll
 	${If} ${Errors}
 		push $R0
 		GetTempFileName $R0 $INSTDIR
 		SetDetailsPrint none
 		Delete $R0
 		SetDetailsPrint lastused
-		Rename $INSTDIR\kritashellex64.dll $R0
+		Rename $INSTDIR\kritashellex${Bits}.dll $R0
 		${If} ${Errors}
-			Delete /REBOOTOK $INSTDIR\kritashellex64.dll
+			Delete /REBOOTOK $INSTDIR\kritashellex${Bits}.dll
 		${Else}
 			Delete /REBOOTOK $R0
 		${EndIf}
 		pop $R0
 	${EndIf}
+!macroend
+
+Section "un.Main_x64" SEC_un_x64
+	MessageBox MB_OK "x64"
+	!insertmacro UnSection_Main_Contents 64
 SectionEnd
 
 Section "un.Main_x86"
-	SetRegView 32
 	MessageBox MB_OK "x86"
-	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra"
-	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
-	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
-	${RefreshShell}
-	Sleep 200
-	# Try deleting, rename if failed
-	Delete $INSTDIR\kritashellex32.dll
-	${If} ${Errors}
-		push $R0
-		GetTempFileName $R0 $INSTDIR
-		SetDetailsPrint none
-		Delete $R0
-		SetDetailsPrint lastused
-		Rename $INSTDIR\kritashellex32.dll $R0
-		${If} ${Errors}
-			Delete /REBOOTOK $INSTDIR\kritashellex32.dll
-		${Else}
-			Delete /REBOOTOK $R0
-		${EndIf}
-		pop $R0
-	${EndIf}
+	!insertmacro UnSection_Main_Contents 32
 SectionEnd
 
 Section "un.Main_associate"
