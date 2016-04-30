@@ -21,6 +21,7 @@ Page Custom func_KritaConfigPage_Show
 
 !insertmacro MUI_LANGUAGE "English"
 
+!include LogicLib.nsh
 !include x64.nsh
 
 !include "include\constants.nsh"
@@ -64,7 +65,6 @@ Page Custom func_KritaConfigPage_Show
 Var KritaExePath
 
 Section "Thing"
-	MessageBox MB_OK "Thing"
 	SetOutPath $INSTDIR
 	${If} ${RunningX64}
 		SetRegView 64
@@ -100,12 +100,10 @@ SectionEnd
 !macroend
 
 Section "Main_x64" SEC_x64
-	MessageBox MB_OK "x64"
 	!insertmacro Section_Main_Contents 64
 SectionEnd
 
 Section "Main_x86"
-	MessageBox MB_OK "x86"
 	!insertmacro Section_Main_Contents 32
 SectionEnd
 
@@ -113,7 +111,6 @@ Section "Main_associate"
 	# TODO: Conditional, check existing association
 	# TODO: Write install log
 	# TODO
-	MessageBox MB_OK "associate"
 	File kritafile.ico
 	# Register .kra
 	WriteRegStr HKCR ".kra" \
@@ -135,7 +132,6 @@ Section "Main_associate"
 SectionEnd
 
 Section "Main_common"
-	MessageBox MB_OK "common"
 	File krita.ico
 	# Register as IThumbnailProvider
 	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
@@ -160,7 +156,6 @@ Section "main_refreshShell"
 SectionEnd
 
 Section "un.Main_common"
-	MessageBox MB_OK "common"
 	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
@@ -195,17 +190,14 @@ SectionEnd
 !macroend
 
 Section "un.Main_x64" SEC_un_x64
-	MessageBox MB_OK "x64"
 	!insertmacro UnSection_Main_Contents 64
 SectionEnd
 
 Section "un.Main_x86"
-	MessageBox MB_OK "x86"
 	!insertmacro UnSection_Main_Contents 32
 SectionEnd
 
 Section "un.Main_associate"
-	MessageBox MB_OK "associate"
 	# TODO: Conditional, use install log
 	Delete $INSTDIR\kritafile.ico
 	# TODO: Refine these a bit
@@ -214,7 +206,6 @@ Section "un.Main_associate"
 SectionEnd
 
 Section "un.Thing"
-	MessageBox MB_OK "Thing"
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
@@ -253,8 +244,7 @@ FunctionEnd
 
 Function func_KritaConfigPage_browse
 	push $R0
-	push $KritaExePath
-	pop $R0
+	StrCpy $R0 $KritaExePath
 	nsDialogs::SelectFileDialog open $R0 "krita.exe|krita.exe"
 	pop $R0
 	${NSD_SetText} $hCtl_KritaConfigPage_TextBoxKritaExePath $R0
