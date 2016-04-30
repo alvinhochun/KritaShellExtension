@@ -5,11 +5,14 @@ Name "Krita Shell Integration"
 XPstyle on
 
 InstallDir ""
+ShowInstDetails show
+ShowUninstDetails show
 
 !include MUI2.nsh
 
 # Installer Pages
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "license.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
 Page Custom func_KritaConfigPage_Show
 !insertmacro MUI_PAGE_INSTFILES
