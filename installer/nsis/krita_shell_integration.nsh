@@ -6,21 +6,23 @@
 !macroend
 !define RefreshShell '!insertmacro RefreshShell_Macro'
 
+!define /ifndef KRITA_SHELLEX_DIR "$INSTDIR"
+
 !macro Krita_RegisterComComonents_Macro Bits
 	SetRegView ${Bits}
-	File kritashellex${Bits}.dll
+	File "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll" kritashellex${Bits}.dll
 	# Register Thumbnail Provider
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
 	                 "" "Krita Thumbnail Provider"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex${Bits}.dll"
+	                 "" "${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
 	                 "ThreadingModel" "Apartment"
 	# Register Property Handler
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}" \
 	                 "" "Krita Property Handler"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex${Bits}.dll"
+	                 "" "${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll"
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
 	                 "ThreadingModel" "Apartment"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
@@ -38,17 +40,17 @@
 	Sleep 200
 	# Try deleting, rename if failed
 	ClearErrors
-	Delete $INSTDIR\kritashellex${Bits}.dll
+	Delete ${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll
 	${If} ${Errors}
 		push $R0
-		GetTempFileName $R0 $INSTDIR
+		GetTempFileName $R0 ${KRITA_SHELLEX_DIR}
 		SetDetailsPrint none
 		Delete $R0
 		SetDetailsPrint lastused
 		ClearErrors
-		Rename $INSTDIR\kritashellex${Bits}.dll $R0
+		Rename ${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll $R0
 		${If} ${Errors}
-			Delete /REBOOTOK $INSTDIR\kritashellex${Bits}.dll
+			Delete /REBOOTOK ${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll
 		${Else}
 			Delete /REBOOTOK $R0
 		${EndIf}
@@ -59,7 +61,7 @@
 !define Krita_UnregisterComComonents '!insertmacro Krita_UnregisterComComonents_Macro'
 
 !macro Krita_RegisterFileAssociation_Macro KritaExePath
-	File kritafile.ico
+	File "/oname=${KRITA_SHELLEX_DIR}\kritafile.ico" kritafile.ico
 	# Remove existing associations (really though?)
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
@@ -75,7 +77,7 @@
 	WriteRegStr HKCR "Krita.Document" \
 	                 "FriendlyTypeName" "Krita Image File"
 	WriteRegStr HKCR "Krita.Document\DefaultIcon" \
-	                 "" "$\"$INSTDIR\kritafile.ico$\",0"
+	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
 	# Open Command
 	${If} ${KritaExePath} != ""
 		WriteRegStr HKCR "Krita.Document\shell\open\command" \
@@ -87,7 +89,7 @@
 !define Krita_RegisterFileAssociation '!insertmacro Krita_RegisterFileAssociation_Macro'
 
 !macro Krita_UnregisterFileAssociation_Macro
-	Delete $INSTDIR\kritafile.ico
+	Delete ${KRITA_SHELLEX_DIR}\kritafile.ico
 	# TODO: Maybe refine these a bit
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
@@ -97,7 +99,7 @@
 !define Krita_UnregisterFileAssociation '!insertmacro Krita_UnregisterFileAssociation_Macro'
 
 !macro Krita_RegisterShellExtension_Macro
-	File krita.ico
+	File "/oname=${KRITA_SHELLEX_DIR}\krita.ico" krita.ico
 	# Register as IThumbnailProvider
 	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
 	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
@@ -113,7 +115,7 @@
 	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
 	# Set Thumbnail Overlay
 	WriteRegStr HKCR "Krita.Document" \
-	                 "TypeOverlay" "$\"$INSTDIR\krita.ico$\",0"
+	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 !macroend
 !define Krita_RegisterShellExtension '!insertmacro Krita_RegisterShellExtension_Macro'
 
@@ -124,6 +126,6 @@
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
-	Delete $INSTDIR\krita.ico
+	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 !macroend
 !define Krita_UnregisterShellExtension '!insertmacro Krita_UnregisterShellExtension_Macro'
