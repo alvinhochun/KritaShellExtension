@@ -128,6 +128,13 @@ Function .onInit
 		StrCpy $InstDir "$PROGRAMFILES32\Krita (x86)\shellex"
 		${DeselectSection} ${SEC_x64}
 	${Endif}
+	# Detect krita.exe shipped with package
+	push $R0
+	StrCpy $R0 "$EXEDIR\bin\krita.exe"
+	${If} ${FileExists} $R0
+		StrCpy $KritaExePath $R0
+	${EndIf}
+	pop $R0
 FunctionEnd
 
 Function un.onInit
