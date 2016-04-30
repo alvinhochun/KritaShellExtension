@@ -62,11 +62,20 @@ Var KritaNsisVersion
 Var KritaNsisBitness
 Var KritaNsisInstallLocation
 
+Var PrevInstallLocation
+Var PrevVersion
+Var PrevStandalone
+Var PrevKritaExePath
+
+Section "Remove_prev_version"
+	${If} ${FileExists} "$PrevInstallLocation\uninstall.exe"
+		ExecWait "$PrevInstallLocation\uninstall.exe /S _?=$PrevInstallLocation"
+		Delete "$PrevInstallLocation\uninstall.exe"
+	${EndIf}
+SectionEnd
+
 Section "Thing"
 	SetOutPath $INSTDIR
-	${If} ${RunningX64}
-		SetRegView 64
-	${EndIf}
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "DisplayName" "Krita Shell Integration"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
@@ -148,9 +157,6 @@ Section "un.Main_associate"
 SectionEnd
 
 Section "un.Thing"
-	${If} ${RunningX64}
-		SetRegView 64
-	${EndIf}
 	DeleteRegKey HKLM "Software\Krita\ShellExtension"
 	DeleteRegKey /ifempty HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
@@ -163,6 +169,7 @@ SectionEnd
 
 Function .onInit
 	${If} ${RunningX64}
+		SetRegView 64
 		StrCpy $InstDir "$PROGRAMFILES64\Krita (x64)\shellex"
 	${Else}
 		StrCpy $InstDir "$PROGRAMFILES32\Krita (x86)\shellex"
@@ -195,16 +202,36 @@ Function .onInit
 	${EndIf}
 	# TODO: Offer to uninstall these old versions?
 
+	# TODO: Allow Krita and the shell extension to be installed separately?
 	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
 	${If} $KritaNsisVersion != ""
-		MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed, which already provides the same functions as this installer does.$\nThis installer will now exit."
+		MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed.$\nThis installer will now exit."
 		Abort
 	${EndIf}
+
+	# Detect other versions of this
+	SetRegView 64
+	ClearErrors
+	ReadRegStr $PrevInstallLocation HKLM "Software\Krita\ShellExtension" "InstallLocation"
+	ReadRegStr $PrevVersion HKLM "Software\Krita\ShellExtension" "Version"
+	ReadRegDWORD $PrevStandalone HKLM "Software\Krita\ShellExtension" "Standalone"
+	ReadRegStr $PrevKritaExePath HKLM "Software\Krita\ShellExtension" "KritaExePath"
+	${If} ${Errors}
+		# Assume no previous version installed or what?
+	${EndIf}
+	${If} $PrevStandalone == 1
+		# Shouldn't reach this???
+		# Whatever we'll just pass
+	${EndIf}
+	${If} ${FileExists} $PrevKritaExePath
+		StrCpy $KritaExePath $PrevKritaExePath
+	${EndIf}
+	# TODO: Compare versions?
 FunctionEnd
 
 Function un.onInit
 	${If} ${RunningX64}
-		# Nothing
+		SetRegView 64
 	${Else}
 		${DeselectSection} ${SEC_un_shellex_x64}
 	${Endif}

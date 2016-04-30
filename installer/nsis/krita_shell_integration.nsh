@@ -25,6 +25,7 @@
 	                 "ThreadingModel" "Apartment"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
 	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
+	SetRegView lastused
 !macroend
 !define Krita_RegisterComComonents '!insertmacro Krita_RegisterComComonents_Macro'
 
@@ -53,6 +54,7 @@
 		${EndIf}
 		pop $R0
 	${EndIf}
+	SetRegView lastused
 !macroend
 !define Krita_UnregisterComComonents '!insertmacro Krita_UnregisterComComonents_Macro'
 
