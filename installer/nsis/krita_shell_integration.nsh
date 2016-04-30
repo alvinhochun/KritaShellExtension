@@ -36,6 +36,7 @@
 	${RefreshShell}
 	Sleep 200
 	# Try deleting, rename if failed
+	ClearErrors
 	Delete $INSTDIR\kritashellex${Bits}.dll
 	${If} ${Errors}
 		push $R0
@@ -43,6 +44,7 @@
 		SetDetailsPrint none
 		Delete $R0
 		SetDetailsPrint lastused
+		ClearErrors
 		Rename $INSTDIR\kritashellex${Bits}.dll $R0
 		${If} ${Errors}
 			Delete /REBOOTOK $INSTDIR\kritashellex${Bits}.dll
