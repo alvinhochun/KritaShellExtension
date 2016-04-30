@@ -30,6 +30,7 @@ Page Custom func_KritaConfigPage_Show
 !include "include\constants.nsh"
 !include "include\KritaConfigPage.nsh"
 !include "include\FileExists2.nsh"
+!include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
 
 # ----[[
@@ -55,6 +56,11 @@ Page Custom func_KritaConfigPage_Show
 # ----]]
 
 Var KritaExePath
+Var KritaMsiProductX86
+Var KritaMsiProductX64
+Var KritaNsisVersion
+Var KritaNsisBitness
+Var KritaNsisInstallLocation
 
 Section "Thing"
 	SetOutPath $INSTDIR
@@ -169,6 +175,31 @@ Function .onInit
 		StrCpy $KritaExePath $R0
 	${EndIf}
 	pop $R0
+	# Detect other Krita versions
+	${DetectKritaMsi32bit} $KritaMsiProductX86
+	${If} ${RunningX64}
+		${DetectKritaMsi64bit} $KritaMsiProductX64
+		${IfKritaMsi3Alpha} $KritaMsiProductX64
+			MessageBox MB_OK|MB_ICONSTOP "Krita 3.0 Alpha 1 is installed.$\nPlease uninstall it before running this installer."
+			Abort
+		${ElseIf} $KritaMsiProductX64 != ""
+			${If} $KritaMsiProductX86 != ""
+				MessageBox MB_OK|MB_ICONEXCLAMATION "Both 32-bit and 64-bit editions of Krita 2.9 or below is installed.$\nYou are strongly recommended to uninstall both of them before running this installer."
+			${Else}
+				MessageBox MB_OK|MB_ICONEXCLAMATION "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it before running this installer."
+			${EndIf}
+		${EndIf}
+	${Endif}
+	${If} $KritaMsiProductX86 != ""
+		MessageBox MB_OK|MB_ICONEXCLAMATION "Krita (32-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it before running this installer."
+	${EndIf}
+	# TODO: Offer to uninstall these old versions?
+
+	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
+	${If} $KritaNsisVersion != ""
+		MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed, which already provides the same functions as this installer does.$\nThis installer will now exit."
+		Abort
+	${EndIf}
 FunctionEnd
 
 Function un.onInit
