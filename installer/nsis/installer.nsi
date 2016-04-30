@@ -27,6 +27,7 @@ Page Custom func_KritaConfigPage_Show
 !include "include\constants.nsh"
 !include "include\KritaConfigPage.nsh"
 !include "include\FileExists2.nsh"
+!include "krita_shell_integration.nsh"
 
 # ----[[
 
@@ -50,18 +51,6 @@ Page Custom func_KritaConfigPage_Show
 
 # ----]]
 
-# ----[[
-
-!macro RefreshShell_Macro
-	# SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr)
-	#   SHCNE_ASSOCCHANGED 0x08000000
-	#   SHCNF_IDLIST 0
-	System::Call "shell32.dll::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)"
-!macroend
-!define RefreshShell '!insertmacro RefreshShell_Macro'
-
-# ----]]
-
 Var KritaExePath
 
 Section "Thing"
@@ -78,77 +67,20 @@ Section "Thing"
 	                 "InstallDir" "$INSTDIR"
 SectionEnd
 
-!macro Section_Main_Contents Bits
-	SetRegView ${Bits}
-	File kritashellex${Bits}.dll
-	# Register Thumbnail Provider
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
-	                 "" "Krita Thumbnail Provider"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex${Bits}.dll"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}\InprocServer32" \
-	                 "ThreadingModel" "Apartment"
-	# Register Property Handler
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}" \
-	                 "" "Krita Property Handler"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "" "$INSTDIR\kritashellex${Bits}.dll"
-	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}\InprocServer32" \
-	                 "ThreadingModel" "Apartment"
-	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
-	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
-!macroend
-
 Section "Main_x64" SEC_x64
-	!insertmacro Section_Main_Contents 64
+	${Krita_RegisterComComonents} 64
 SectionEnd
 
 Section "Main_x86"
-	!insertmacro Section_Main_Contents 32
+	${Krita_RegisterComComonents} 32
 SectionEnd
 
 Section "Main_associate"
-	# TODO: Conditional, check existing association
-	# TODO: Write install log
-	# TODO
-	File kritafile.ico
-	# Register .kra
-	WriteRegStr HKCR ".kra" \
-	                 "" "Krita.Document"
-	WriteRegStr HKCR ".kra" \
-	                 "Content Type" "application/x-krita"
-	# Register ProgId
-	WriteRegStr HKCR "Krita.Document" \
-	                 "" "Krita Image File"
-	WriteRegStr HKCR "Krita.Document" \
-	                 "FriendlyTypeName" "Krita Image File"
-	WriteRegStr HKCR "Krita.Document\DefaultIcon" \
-	                 "" "$\"$INSTDIR\kritafile.ico$\",0"
-	# Open Command
-	${If} $KritaExePath != ""
-		WriteRegStr HKCR "Krita.Document\shell\open\command" \
-						 "" "$\"$KritaExePath$\" $\"%1$\""
-	${EndIf}
+	${Krita_RegisterFileAssociation} $KritaExePath
 SectionEnd
 
 Section "Main_common"
-	File krita.ico
-	# Register as IThumbnailProvider
-	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
-	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
-	# Set PerceivedType
-	WriteRegStr HKCR ".kra" \
-	                 "PerceivedType" "Image"
-	# Set Property Lists
-	WriteRegStr HKCR "Krita.Document" \
-	                 "PreviewDetails" "prop:System.DateModified;System.Size;System.DateCreated;*System.Image.Dimensions;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith"
-	WriteRegStr HKCR "Krita.Document" \
-	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
-	WriteRegStr HKCR "Krita.Document" \
-	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
-	# Set Thumbnail Overlay
-	WriteRegStr HKCR "Krita.Document" \
-	                 "TypeOverlay" "$\"$INSTDIR\krita.ico$\",0"
+	${Krita_RegisterShellExtension}
 SectionEnd
 
 Section "main_refreshShell"
@@ -156,53 +88,20 @@ Section "main_refreshShell"
 SectionEnd
 
 Section "un.Main_common"
-	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
-	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
-	DeleteRegValue HKCR "Krita.Document" "InfoTip"
-	DeleteRegValue HKCR "Krita.Document" "FullDetails"
-	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
-	Delete $INSTDIR\krita.ico
+	${Krita_UnregisterShellExtension}
 SectionEnd
 
-!macro UnSection_Main_Contents Bits
-	SetRegView ${Bits}
-	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra"
-	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
-	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
-	${RefreshShell}
-	Sleep 200
-	# Try deleting, rename if failed
-	Delete $INSTDIR\kritashellex${Bits}.dll
-	${If} ${Errors}
-		push $R0
-		GetTempFileName $R0 $INSTDIR
-		SetDetailsPrint none
-		Delete $R0
-		SetDetailsPrint lastused
-		Rename $INSTDIR\kritashellex${Bits}.dll $R0
-		${If} ${Errors}
-			Delete /REBOOTOK $INSTDIR\kritashellex${Bits}.dll
-		${Else}
-			Delete /REBOOTOK $R0
-		${EndIf}
-		pop $R0
-	${EndIf}
-!macroend
-
 Section "un.Main_x64" SEC_un_x64
-	!insertmacro UnSection_Main_Contents 64
+	${Krita_UnregisterComComonents} 64
 SectionEnd
 
 Section "un.Main_x86"
-	!insertmacro UnSection_Main_Contents 32
+	${Krita_UnregisterComComonents} 32
 SectionEnd
 
 Section "un.Main_associate"
 	# TODO: Conditional, use install log
-	Delete $INSTDIR\kritafile.ico
-	# TODO: Refine these a bit
-	DeleteRegKey HKCR ".kra"
-	DeleteRegKey HKCR "Krita.Document"
+	${Krita_UnregisterFileAssociation}
 SectionEnd
 
 Section "un.Thing"
