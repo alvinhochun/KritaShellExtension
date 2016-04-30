@@ -110,11 +110,11 @@ Section "Thing"
 	                 "KritaExePath" "$KritaExePath"
 SectionEnd
 
-Section "Main_x64" SEC_x64
+Section "ShellEx_x64" SEC_shellex_x64
 	${Krita_RegisterComComonents} 64
 SectionEnd
 
-Section "Main_x86"
+Section "ShellEx_x86"
 	${Krita_RegisterComComonents} 32
 SectionEnd
 
@@ -122,23 +122,23 @@ Section "Main_associate"
 	${Krita_RegisterFileAssociation} $KritaExePath
 SectionEnd
 
-Section "Main_common"
+Section "ShellEx_common"
 	${Krita_RegisterShellExtension}
 SectionEnd
 
-Section "main_refreshShell"
+Section "Main_refreshShell"
 	${RefreshShell}
 SectionEnd
 
-Section "un.Main_common"
+Section "un.ShellEx_common"
 	${Krita_UnregisterShellExtension}
 SectionEnd
 
-Section "un.Main_x64" SEC_un_x64
+Section "un.ShellEx_x64" SEC_un_shellex_x64
 	${Krita_UnregisterComComonents} 64
 SectionEnd
 
-Section "un.Main_x86"
+Section "un.ShellEx_x86"
 	${Krita_UnregisterComComonents} 32
 SectionEnd
 
@@ -157,7 +157,7 @@ Section "un.Thing"
 	Delete $INSTDIR\uninstall.exe
 SectionEnd
 
-Section "un.main_refreshShell"
+Section "un.Main_refreshShell"
 	${RefreshShell}
 SectionEnd
 
@@ -166,7 +166,7 @@ Function .onInit
 		StrCpy $InstDir "$PROGRAMFILES64\Krita (x64)\shellex"
 	${Else}
 		StrCpy $InstDir "$PROGRAMFILES32\Krita (x86)\shellex"
-		${DeselectSection} ${SEC_x64}
+		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
 	# Detect krita.exe shipped with package
 	push $R0
@@ -184,7 +184,7 @@ Function .onInit
 			Abort
 		${ElseIf} $KritaMsiProductX64 != ""
 			${If} $KritaMsiProductX86 != ""
-				MessageBox MB_OK|MB_ICONEXCLAMATION "Both 32-bit and 64-bit editions of Krita 2.9 or below is installed.$\nYou are strongly recommended to uninstall both of them before running this installer."
+				MessageBox MB_OK|MB_ICONEXCLAMATION "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nYou are strongly recommended to uninstall both of them before running this installer."
 			${Else}
 				MessageBox MB_OK|MB_ICONEXCLAMATION "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it before running this installer."
 			${EndIf}
@@ -206,7 +206,7 @@ Function un.onInit
 	${If} ${RunningX64}
 		# Nothing
 	${Else}
-		${DeselectSection} ${SEC_un_x64}
+		${DeselectSection} ${SEC_un_shellex_x64}
 	${Endif}
 FunctionEnd
 
