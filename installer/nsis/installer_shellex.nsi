@@ -210,17 +210,16 @@ Function .onInit
 	${EndIf}
 
 	# Detect other versions of this
-	SetRegView 64
 	ClearErrors
 	ReadRegStr $PrevInstallLocation HKLM "Software\Krita\ShellExtension" "InstallLocation"
 	ReadRegStr $PrevVersion HKLM "Software\Krita\ShellExtension" "Version"
 	ReadRegDWORD $PrevStandalone HKLM "Software\Krita\ShellExtension" "Standalone"
 	ReadRegStr $PrevKritaExePath HKLM "Software\Krita\ShellExtension" "KritaExePath"
 	${If} ${Errors}
-		# Assume no previous version installed or what?
+		# TODO: Assume no previous version installed or what?
 	${EndIf}
 	${If} $PrevStandalone == 1
-		# Shouldn't reach this???
+		# Shouldn't reach this??? We've already checked for Krita version above
 		# Whatever we'll just pass
 	${EndIf}
 	${If} ${FileExists} $PrevKritaExePath
