@@ -62,12 +62,26 @@ Section "Thing"
 		SetRegView 64
 	${EndIf}
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayName" "Krita Shell Integration"
+	                 "DisplayName" "Krita Shell Integration (Test)"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
-	WriteRegStr HKLM "Software\Krita\ShellExtension" \
-	                 "InstallDir" "$INSTDIR"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                 "DisplayVersion" "1.1.0.0"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                 "DisplayIcon" "$\"$INSTDIR\krita.ico$\",0"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                 "URLInfoAbout" "https://github.com/alvinhochun/KritaShellExtension"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                 "InstallLocation" "$INSTDIR"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                 "Publisher" "Alvin Wong"
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                   "EstimatedSize" 680
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                   "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+	                   "NoRepair" 1
 SectionEnd
 
 Section "Main_x64" SEC_x64
@@ -111,8 +125,6 @@ Section "un.Thing"
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
-	DeleteRegKey HKLM "Software\Krita\ShellExtension"
-	DeleteRegKey /ifempty HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
 	Delete $INSTDIR\uninstall.exe
 SectionEnd
