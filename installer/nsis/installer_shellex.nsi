@@ -68,7 +68,7 @@ Section "Thing"
 		SetRegView 64
 	${EndIf}
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayName" "Krita Shell Integration (Test)"
+	                 "DisplayName" "Krita Shell Integration"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
