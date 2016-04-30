@@ -82,6 +82,26 @@ Section "Thing"
 	                   "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                   "NoRepair" 1
+	# Registry entries for version recognition
+	#   InstallLocation:
+	#     Where the shell extension is installed
+	#     If installed by Krita installer, this must point to shellex sub-dir
+	WriteRegStr HKLM "Software\Krita\ShellExtension" \
+	                 "InstallLocation" "$INSTDIR"
+	#   Version:
+	#     Version of the shell extension
+	WriteRegStr HKLM "Software\Krita\ShellExtension" \
+	                 "Version" "1.1.0.0"
+	#   Standalone:
+	#     0 = Installed by Krita installer
+	#     1 = Standalone installer
+	WriteRegDWORD HKLM "Software\Krita\ShellExtension" \
+	                   "Standalone" 1
+	#   KritaExePath:
+	#     Path to krita.exe as specified by user or by Krita installer
+	#     Empty if not specified
+	WriteRegStr HKLM "Software\Krita\ShellExtension" \
+	                 "KritaExePath" "$KritaExePath"
 SectionEnd
 
 Section "Main_x64" SEC_x64
@@ -125,6 +145,8 @@ Section "un.Thing"
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
+	DeleteRegKey HKLM "Software\Krita\ShellExtension"
+	DeleteRegKey /ifempty HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
 	Delete $INSTDIR\uninstall.exe
 SectionEnd
@@ -174,7 +196,6 @@ FunctionEnd
 
 Function func_KritaConfigPage_text_change
 	push $R0
-	# TODO: ?
 	${NSD_GetText} $hCtl_KritaConfigPage_TextBoxKritaExePath $KritaExePath
 	GetDlgItem $R0 $HWNDPARENT 1
 	${If} $KritaExePath == ""

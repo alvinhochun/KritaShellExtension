@@ -117,6 +117,7 @@
 
 !macro Krita_UnregisterShellExtension_Macro
 	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
+	DeleteRegKey /ifempty HKCR ".kra\shellex\"
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"
