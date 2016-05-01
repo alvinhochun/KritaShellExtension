@@ -214,6 +214,7 @@ Function .onInit
 				Abort
 			${EndIf}
 			pop $R0
+			StrCpy $KritaMsiProductX64 ""
 		${ElseIf} $KritaMsiProductX64 != ""
 			${If} $KritaMsiProductX86 != ""
 				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nYou are strongly recommended to uninstall both of them.$\nDo you want to remove them now?" \
@@ -231,9 +232,11 @@ Function .onInit
 					Abort
 				${EndIf}
 				pop $R0
+				StrCpy $KritaMsiProductX86 ""
+				StrCpy $KritaMsiProductX64 ""
 				lbl_noremoveKritaBoth:
 			${Else}
-				MessageBox MB_OK|MB_ICONEXCLAMATION "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
 				           /SD IDYES \
 				           IDNO lbl_noremoveKritaX64
 				push $R0
@@ -243,12 +246,14 @@ Function .onInit
 					Abort
 				${EndIf}
 				pop $R0
+				StrCpy $KritaMsiProductX64 ""
 				lbl_noremoveKritaX64:
 			${EndIf}
 		${EndIf}
 	${Endif}
 	${If} $KritaMsiProductX86 != ""
-		MessageBox MB_OK|MB_ICONEXCLAMATION "Krita (32-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
+	${AndIf} $KritaMsiProductX64 == ""
+		MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
 		           /SD IDYES \
 		           IDNO lbl_noremoveKritaX86
 		push $R0
@@ -258,6 +263,7 @@ Function .onInit
 			Abort
 		${EndIf}
 		pop $R0
+		StrCpy $KritaMsiProductX86 ""
 		lbl_noremoveKritaX86:
 	${EndIf}
 
