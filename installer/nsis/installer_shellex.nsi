@@ -175,6 +175,7 @@ Section "un.Thing"
 	DeleteRegKey /ifempty HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
 	Delete $INSTDIR\uninstall.exe
+	RMDir /REBOOTOK $INSTDIR
 SectionEnd
 
 Section "un.Main_refreshShell"

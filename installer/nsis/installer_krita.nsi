@@ -207,11 +207,13 @@ Section "Main_Krita"
 	File /r ${KRITA_PACKAGE_ROOT}\share
 SectionEnd
 
-!ifdef KRITA_INSTALLER_64
+Section "ShellEx_mkdir"
+	CreateDirectory ${KRITA_SHELLEX_DIR}
+SectionEnd
+
 Section "ShellEx_x64" SEC_shellex_x64
 	${Krita_RegisterComComonents} 64
 SectionEnd
-!endif
 
 Section "ShellEx_x86"
 	${Krita_RegisterComComonents} 32
@@ -233,11 +235,9 @@ Section "un.ShellEx_common"
 	${Krita_UnregisterShellExtension}
 SectionEnd
 
-!ifdef KRITA_INSTALLER_64
 Section "un.ShellExn_x64" SEC_un_shellex_x64
 	${Krita_UnregisterComComonents} 64
 SectionEnd
-!endif
 
 Section "un.ShellEx_x86"
 	${Krita_UnregisterComComonents} 32
@@ -245,7 +245,6 @@ SectionEnd
 
 Section "un.Main_associate"
 	# TODO: Conditional, use install log
-	SetOutPath $INSTDIR\shellex
 	${Krita_UnregisterFileAssociation}
 SectionEnd
 
@@ -257,9 +256,11 @@ Section "un.Main_Krita"
 SectionEnd
 
 Section "un.Thing"
+	RMDir /REBOOTOK $INSTDIR\shellex
 	DeleteRegKey HKLM "Software\Krita"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}"
 	Delete $INSTDIR\uninstall.exe
+	RMDir /REBOOTOK $INSTDIR
 SectionEnd
 
 Section "un.Main_refreshShell"
@@ -279,6 +280,8 @@ Function .onInit
 	${If} ${RunningX64}
 		SetRegView 64
 		MessageBox MB_OK|MB_ICONEXCLAMATION "You are running 64-bit Windows. You are strongly recommended to install the 64-bit version of Krita instead since it offers better performance."
+	${Else}
+		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
 !endif
 	# Detect other Krita versions
@@ -341,6 +344,8 @@ Function un.onInit
 !else
 	${If} ${RunningX64}
 		SetRegView 64
+	${Else}
+		${DeselectSection} ${SEC_un_shellex_x64}
 	${Endif}
 !endif
 FunctionEnd
