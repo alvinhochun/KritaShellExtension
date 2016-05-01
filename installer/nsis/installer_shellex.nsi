@@ -10,6 +10,8 @@ ShowUninstDetails show
 
 !include MUI2.nsh
 
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+
 # Installer Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "license.rtf"
@@ -27,11 +29,23 @@ Page Custom func_KritaConfigPage_Show
 !include LogicLib.nsh
 !include x64.nsh
 
-!include "include\constants.nsh"
 !include "include\KritaConfigPage.nsh"
 !include "include\FileExists2.nsh"
 !include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
+
+!define KRITASHELLEX_PRODUCTNAME "Krita Shell Integration"
+!define KRITASHELLEX_PUBLISHER "Alvin Wong"
+
+VIProductVersion "${KRITASHELLEX_VERSION}"
+VIAddVersionKey "CompanyName" "${KRITASHELLEX_PUBLISHER}"
+VIAddVersionKey "FileDescription" "${KRITASHELLEX_PRODUCTNAME} Setup"
+VIAddVersionKey "FileVersion" "${KRITASHELLEX_VERSION}"
+VIAddVersionKey "InternalName" "kritashellex_setup.exe"
+VIAddVersionKey "LegalCopyright" "Copyright (C) Alvin Wong 2016"
+VIAddVersionKey "OriginalFileName" "kritashellex_setup.exe"
+VIAddVersionKey "ProductName" "${KRITASHELLEX_PRODUCTNAME} Setup"
+VIAddVersionKey "ProductVersion" "${KRITASHELLEX_VERSION}"
 
 # ----[[
 
@@ -77,12 +91,12 @@ SectionEnd
 Section "Thing"
 	SetOutPath $INSTDIR
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayName" "Krita Shell Integration"
+	                 "DisplayName" "${KRITASHELLEX_PRODUCTNAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayVersion" "1.1.0.0"
+	                 "DisplayVersion" "${KRITASHELLEX_VERSION}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "DisplayIcon" "$\"$INSTDIR\krita.ico$\",0"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
@@ -90,7 +104,7 @@ Section "Thing"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                 "InstallLocation" "$INSTDIR"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "Publisher" "Alvin Wong"
+	                 "Publisher" "${KRITASHELLEX_PUBLISHER}"
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
 	                   "EstimatedSize" 680
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
@@ -106,7 +120,7 @@ Section "Thing"
 	#   Version:
 	#     Version of the shell extension
 	WriteRegStr HKLM "Software\Krita\ShellExtension" \
-	                 "Version" "1.1.0.0"
+	                 "Version" "${KRITASHELLEX_VERSION}"
 	#   Standalone:
 	#     0 = Installed by Krita installer
 	#     1 = Standalone installer

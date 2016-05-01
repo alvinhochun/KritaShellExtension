@@ -6,7 +6,24 @@
 !macroend
 !define RefreshShell '!insertmacro RefreshShell_Macro'
 
+# Shell extension constants
+!define KRITASHELLEX_VERSION "1.1.0.0"
+!getdllversion "kritashellex32.dll" KRITASHELLEX_DLLVER_32_
+!define KRITASHELLEX_DLLVER_32 "${KRITASHELLEX_DLLVER_32_1}.${KRITASHELLEX_DLLVER_32_2}.${KRITASHELLEX_DLLVER_32_3}.${KRITASHELLEX_DLLVER_32_4}"
+!getdllversion "kritashellex64.dll" KRITASHELLEX_DLLVER_64_
+!define KRITASHELLEX_DLLVER_64 "${KRITASHELLEX_DLLVER_64_1}.${KRITASHELLEX_DLLVER_64_2}.${KRITASHELLEX_DLLVER_64_3}.${KRITASHELLEX_DLLVER_64_4}"
+!if ${KRITASHELLEX_DLLVER_32} != ${KRITASHELLEX_DLLVER_64}
+	!error "kritashellex32.dll (${KRITASHELLEX_DLLVER_32}) and kritashellex64.dll (${KRITASHELLEX_DLLVER_64}) version mismatch. ${KRITASHELLEX_VERSION} is expected."
+!endif
+!if ${KRITASHELLEX_VERSION} != ${KRITASHELLEX_DLLVER_32}
+	!error "Krita shell extension version ${KRITASHELLEX_VERSION} expected, got ${KRITASHELLEX_DLLVER_32} instead."
+!endif
+
 !define /ifndef KRITA_SHELLEX_DIR "$INSTDIR"
+
+# CLSIDs of the shell extension classes
+!define KRITASHELLEX_CLSID_THUMBNAILPROVIDER "{C6806289-D605-4AFE-A778-BC584303DB9A}"
+!define KRITASHELLEX_CLSID_PROPERTYHANDLER "{C8E5509D-6F68-480C-8A41-DB64AECE94C6}"
 
 !macro Krita_RegisterComComonents_Macro Bits
 	SetRegView ${Bits}

@@ -1,6 +1,9 @@
 !ifndef KRITA_INSTALLER_32 & KRITA_INSTALLER_64
 	!error "Either one of KRITA_INSTALLER_32 or KRITA_INSTALLER_64 must be defined."
 !endif
+!ifdef KRITA_INSTALLER_32 & KRITA_INSTALLER_64
+	!error "Only one of KRITA_INSTALLER_32 or KRITA_INSTALLER_64 should be defined."
+!endif
 
 !ifndef KRITA_PACKAGE_ROOT
 	!error "KRITA_PACKAGE_ROOT should be defined and point to the root of the package files."
@@ -8,14 +11,48 @@
 
 Unicode true
 
+# Krita constants (can be overridden in command line params)
+!define /ifndef KRITA_VERSION "0.0.0.0"
+!define /ifndef KRITA_VERSION_DISPLAY "test-version"
+#!define /ifndef KRITA_VERSION_GIT ""
+!define /ifndef KRITA_INSTALLER_OUTPUT_DIR ""
 !ifdef KRITA_INSTALLER_64
-	OutFile "krita_x64_setup.exe"
-	Name "Krita (x64)"
+	!define /ifndef KRITA_INSTALLER_OUTPUT_NAME "krita_x64_setup.exe"
+!else
+	!define /ifndef KRITA_INSTALLER_OUTPUT_NAME "krita_x86_setup.exe"
+!endif
+
+# Krita constants (fixed)
+!if "${KRITA_INSTALLER_OUTPUT_DIR}" == ""
+	!define KRITA_INSTALLER_OUTPUT "${KRITA_INSTALLER_OUTPUT_NAME}"
+!else
+	!define KRITA_INSTALLER_OUTPUT "${KRITA_INSTALLER_OUTPUT_DIR}\${KRITA_INSTALLER_OUTPUT_NAME}"
+!endif
+!define KRTIA_PUBLISHER "Krita Foundation"
+!ifdef KRITA_INSTALLER_64
+	!define KRITA_PRODUCTNAME "Krita (x64) ${KRITA_VERSION_DISPLAY}"
+	!define KRITA_UNINSTALL_REGKEY "Krita_x64"
+!else
+	!define KRITA_PRODUCTNAME "Krita (x86) ${KRITA_VERSION_DISPLAY}"
+	!define KRITA_UNINSTALL_REGKEY "Krita_x86"
+!endif
+
+VIProductVersion "${KRITA_VERSION}"
+VIAddVersionKey "CompanyName" "${KRTIA_PUBLISHER}"
+VIAddVersionKey "FileDescription" "${KRITA_PRODUCTNAME} Setup"
+VIAddVersionKey "FileVersion" "${KRITA_VERSION}"
+VIAddVersionKey "InternalName" "${KRITA_INSTALLER_OUTPUT_NAME}"
+VIAddVersionKey "LegalCopyright" "${KRTIA_PUBLISHER}"
+VIAddVersionKey "OriginalFileName" "${KRITA_INSTALLER_OUTPUT_NAME}"
+VIAddVersionKey "ProductName" "${KRITA_PRODUCTNAME} Setup"
+VIAddVersionKey "ProductVersion" "${KRITA_VERSION}"
+
+Name "${KRITA_PRODUCTNAME}"
+OutFile ${KRITA_INSTALLER_OUTPUT}
+!ifdef KRITA_INSTALLER_64
 	InstallDir "$PROGRAMFILES64\Krita (x64)"
 !else
-	OutFile "krita_x86_setup.exe"
-	Name "Krita (x86)"
-	InstallDir "$PROGRAMFILES64\Krita (x86)"
+	InstallDir "$PROGRAMFILES32\Krita (x86)"
 !endif
 XPstyle on
 
@@ -28,12 +65,16 @@ ShowUninstDetails show
 
 # Installer Pages
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "license_krita.rtf"
+!define MUI_LICENSEPAGE_CHECKBOX
+!insertmacro MUI_PAGE_LICENSE "license_gpl-2.0.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
-!insertmacro MUI_PAGE_COMPONENTS
-#!insertmacro MUI_PAGE_LICENSE "license.rtf"
-#Page Custom func_KritaConfigPage_Show
+#!insertmacro MUI_PAGE_COMPONENTS
+!define MUI_WELCOMEPAGE_TITLE "License Agreement (Krita Shell Extension)
+!insertmacro MUI_PAGE_LICENSE "license.rtf"
 # TODO: More options?
+!define MUI_WELCOMEPAGE_TITLE "placeholder page"
+!define MUI_WELCOMEPAGE_TEXT "there should be shortcut options here I think? or what?$\r$\n$\r$\n$_CLICK"
+!insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -46,18 +87,9 @@ ShowUninstDetails show
 !include LogicLib.nsh
 !include x64.nsh
 
-!ifdef KRITA_INSTALLER_64
-	!define UNINSTALL_REGKEY "Krita_x64"
-	!define UNINSTALL_PRODUCT "Krita (x64)"
-!else
-	!define UNINSTALL_REGKEY "Krita_x86"
-	!define UNINSTALL_PRODUCT "Krita (x86)"
-!endif
 !define KRITA_SHELLEX_DIR "$INSTDIR\shellex"
 
-!include "include\constants.nsh"
-#!include "include\KritaConfigPage.nsh"
-#!include "include\FileExists2.nsh"
+!include "include\FileExists2.nsh"
 !include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
 
@@ -108,26 +140,26 @@ SectionEnd
 
 Section "Thing"
 	SetOutPath $INSTDIR
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
-	                 "DisplayName" "${UNINSTALL_PRODUCT}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
+	                 "DisplayName" "${KRITA_PRODUCTNAME}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
-	                 "DisplayVersion" "2.99.90.0"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
+	                 "DisplayVersion" "${KRITA_VERSION}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "DisplayIcon" "$\"$INSTDIR\shellex\krita.ico$\",0"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "URLInfoAbout" "https://krita.org/"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "InstallLocation" "$INSTDIR"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
-	                 "Publisher" "Krita Foundation"
-	#WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
+	                 "Publisher" "${KRTIA_PUBLISHER}"
+	#WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	#                   "EstimatedSize" 250000
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                   "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}" \
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                   "NoRepair" 1
 	# Registry entries for version recognition
 	#   InstallLocation:
@@ -137,7 +169,7 @@ Section "Thing"
 	#   Version:
 	#     Version of Krita
 	WriteRegStr HKLM "Software\Krita" \
-	                 "Version" "2.99.90.0"
+	                 "Version" "${KRITA_VERSION}"
 	#   x64:
 	#     Set to 1 for 64-bit Krita, can be missing for 32-bit Krita
 !ifdef KRITA_INSTALLER_64
@@ -155,7 +187,7 @@ Section "Thing"
 	#   ShellExtension\Version:
 	#     Version of the shell extension
 	WriteRegStr HKLM "Software\Krita\ShellExtension" \
-	                 "Version" "1.1.0.0"
+	                 "Version" "${KRITASHELLEX_VERSION}"
 	#   ShellExtension\Standalone:
 	#     0 = Installed by Krita installer
 	#     1 = Standalone installer
@@ -226,7 +258,7 @@ SectionEnd
 
 Section "un.Thing"
 	DeleteRegKey HKLM "Software\Krita"
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINSTALL_REGKEY}"
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}"
 	Delete $INSTDIR\uninstall.exe
 SectionEnd
 
