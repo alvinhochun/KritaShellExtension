@@ -185,9 +185,9 @@ SectionEnd
 Function .onInit
 	${If} ${RunningX64}
 		SetRegView 64
-		StrCpy $InstDir "$PROGRAMFILES64\Krita (x64)\shellex"
+		StrCpy $InstDir "$PROGRAMFILES64\Krita Shell Extension"
 	${Else}
-		StrCpy $InstDir "$PROGRAMFILES32\Krita (x86)\shellex"
+		StrCpy $InstDir "$PROGRAMFILES32\Krita Shell Extension"
 		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
 	# Detect krita.exe shipped with package
