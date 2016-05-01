@@ -50,6 +50,11 @@
 !macroend
 !define IfKritaMsi3Alpha '!insertmacro IfKritaMsi3Alpha_Macro'
 
+!macro MsiUninstall_Macro ProductCode ExitCodeOut
+	ExecWait "msiexec.exe /uninstall ${ProductCode} /passive /norestart" ${ExitCodeOut}
+!macroend
+!define MsiUninstall '!insertmacro MsiUninstall_Macro'
+
 !macro DetectKritaNsis_Macro VersionOut BitsOut InstallLocationOut
 	push $0
 	push $1
