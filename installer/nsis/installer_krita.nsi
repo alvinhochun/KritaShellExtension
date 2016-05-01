@@ -279,7 +279,11 @@ Function .onInit
 !else
 	${If} ${RunningX64}
 		SetRegView 64
-		MessageBox MB_OK|MB_ICONEXCLAMATION "You are running 64-bit Windows. You are strongly recommended to install the 64-bit version of Krita instead since it offers better performance."
+		MessageBox MB_YESNO|MB_ICONEXCLAMATION "You are running 64-bit Windows. You are strongly recommended to install the 64-bit version of Krita instead since it offers better performance.$\nIf you want to run the 32-bit version for testing, you should consider using the zip package instead.$\n$\nDo you still wish to install the 32-bit version of Krita?" \
+		           /SD IDYES \
+		           IDYES lbl_allow32on64
+		Abort
+		lbl_allow32on64:
 	${Else}
 		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
