@@ -69,7 +69,7 @@ ShowUninstDetails show
 !insertmacro MUI_PAGE_LICENSE "license_gpl-2.0.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
 #!insertmacro MUI_PAGE_COMPONENTS
-!define MUI_WELCOMEPAGE_TITLE "License Agreement (Krita Shell Extension)
+!define MUI_PAGE_HEADER_TEXT "License Agreement (Krita Shell Extension)"
 !insertmacro MUI_PAGE_LICENSE "license.rtf"
 # TODO: More options?
 !define MUI_WELCOMEPAGE_TITLE "placeholder page"
