@@ -30,24 +30,24 @@ Unicode true
 !endif
 !define KRTIA_PUBLISHER "Krita Foundation"
 !ifdef KRITA_INSTALLER_64
-	!define KRITA_PRODUCTNAME "Krita (x64) ${KRITA_VERSION_DISPLAY}"
+	!define KRITA_PRODUCTNAME "Krita (x64)"
 	!define KRITA_UNINSTALL_REGKEY "Krita_x64"
 !else
-	!define KRITA_PRODUCTNAME "Krita (x86) ${KRITA_VERSION_DISPLAY}"
+	!define KRITA_PRODUCTNAME "Krita (x86)"
 	!define KRITA_UNINSTALL_REGKEY "Krita_x86"
 !endif
 
 VIProductVersion "${KRITA_VERSION}"
 VIAddVersionKey "CompanyName" "${KRTIA_PUBLISHER}"
-VIAddVersionKey "FileDescription" "${KRITA_PRODUCTNAME} Setup"
+VIAddVersionKey "FileDescription" "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} Setup"
 VIAddVersionKey "FileVersion" "${KRITA_VERSION}"
 VIAddVersionKey "InternalName" "${KRITA_INSTALLER_OUTPUT_NAME}"
 VIAddVersionKey "LegalCopyright" "${KRTIA_PUBLISHER}"
 VIAddVersionKey "OriginalFileName" "${KRITA_INSTALLER_OUTPUT_NAME}"
-VIAddVersionKey "ProductName" "${KRITA_PRODUCTNAME} Setup"
+VIAddVersionKey "ProductName" "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} Setup"
 VIAddVersionKey "ProductVersion" "${KRITA_VERSION}"
 
-Name "${KRITA_PRODUCTNAME}"
+Name "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}"
 OutFile ${KRITA_INSTALLER_OUTPUT}
 !ifdef KRITA_INSTALLER_64
 	InstallDir "$PROGRAMFILES64\Krita (x64)"
@@ -141,7 +141,7 @@ SectionEnd
 Section "Thing"
 	SetOutPath $INSTDIR
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
-	                 "DisplayName" "${KRITA_PRODUCTNAME}"
+	                 "DisplayName" "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
 	WriteUninstaller $INSTDIR\uninstall.exe
@@ -293,7 +293,7 @@ Function .onInit
 	${If} ${RunningX64}
 		${DetectKritaMsi64bit} $KritaMsiProductX64
 		${IfKritaMsi3Alpha} $KritaMsiProductX64
-			MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita 3.0 Alpha 1 is installed. It must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+			MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita 3.0 Alpha 1 is installed. It must be removed before ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} can be installed.$\nDo you wish to remove it now?" \
 			           /SD IDYES \
 			           IDYES lbl_removeKrita3alpha
 			Abort
@@ -308,7 +308,7 @@ Function .onInit
 			StrCpy $KritaMsiProductX64 ""
 		${ElseIf} $KritaMsiProductX64 != ""
 			${If} $KritaMsiProductX86 != ""
-				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nBoth must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you want to remove them now?" \
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nBoth must be removed before ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} can be installed.$\nDo you want to remove them now?" \
 				           /SD IDYES \
 				           IDYES lbl_removeKritaBoth
 				Abort
@@ -328,7 +328,7 @@ Function .onInit
 				StrCpy $KritaMsiProductX86 ""
 				StrCpy $KritaMsiProductX64 ""
 			${Else}
-				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} can be installed.$\nDo you wish to remove it now?" \
 				           /SD IDYES \
 				           IDYES lbl_removeKritaX64
 				Abort
@@ -345,7 +345,7 @@ Function .onInit
 		${EndIf}
 	${Endif}
 	${If} $KritaMsiProductX86 != ""
-		MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+		MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} can be installed.$\nDo you wish to remove it now?" \
 		           /SD IDYES \
 		           IDYES lbl_removeKritaX86
 		Abort
