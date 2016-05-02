@@ -1,7 +1,10 @@
 Unicode true
 
+!define KRITASHELLEX_PRODUCTNAME "Krita Shell Integration"
+!define KRITASHELLEX_PUBLISHER "Alvin Wong"
+
 OutFile "kritashellex_setup.exe"
-Name "Krita Shell Integration"
+Name "${KRITASHELLEX_PRODUCTNAME}"
 XPstyle on
 
 InstallDir ""
@@ -34,9 +37,6 @@ Page Custom func_KritaConfigPage_Show
 !include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
 
-!define KRITASHELLEX_PRODUCTNAME "Krita Shell Integration"
-!define KRITASHELLEX_PUBLISHER "Alvin Wong"
-
 VIProductVersion "${KRITASHELLEX_VERSION}"
 VIAddVersionKey "CompanyName" "${KRITASHELLEX_PUBLISHER}"
 VIAddVersionKey "FileDescription" "${KRITASHELLEX_PRODUCTNAME} Setup"
@@ -46,6 +46,8 @@ VIAddVersionKey "LegalCopyright" "Copyright (C) Alvin Wong 2016"
 VIAddVersionKey "OriginalFileName" "kritashellex_setup.exe"
 VIAddVersionKey "ProductName" "${KRITASHELLEX_PRODUCTNAME} Setup"
 VIAddVersionKey "ProductVersion" "${KRITASHELLEX_VERSION}"
+
+BrandingText "[NSIS ${NSIS_VERSION}]  ${KRITASHELLEX_PRODUCTNAME} ${KRITASHELLEX_VERSION}"
 
 Var KritaExePath
 Var KritaMsiProductX86
