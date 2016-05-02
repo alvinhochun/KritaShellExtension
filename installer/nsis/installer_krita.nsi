@@ -279,7 +279,7 @@ Function .onInit
 !else
 	${If} ${RunningX64}
 		SetRegView 64
-		MessageBox MB_YESNO|MB_ICONEXCLAMATION "You are running 64-bit Windows. You are strongly recommended to install the 64-bit version of Krita instead since it offers better performance.$\nIf you want to run the 32-bit version for testing, you should consider using the zip package instead.$\n$\nDo you still wish to install the 32-bit version of Krita?" \
+		MessageBox MB_YESNO|MB_ICONEXCLAMATION "You are trying to install 32-bit Krita on 64-bit Windows. You are strongly recommended to install the 64-bit version of Krita instead since it offers better performance.$\nIf you want to use the 32-bit version for testing, you should consider using the zip package instead.$\n$\nDo you still wish to install the 32-bit version of Krita?" \
 		           /SD IDYES \
 		           IDYES lbl_allow32on64
 		Abort
@@ -293,23 +293,72 @@ Function .onInit
 	${If} ${RunningX64}
 		${DetectKritaMsi64bit} $KritaMsiProductX64
 		${IfKritaMsi3Alpha} $KritaMsiProductX64
-			MessageBox MB_OK|MB_ICONSTOP "Krita 3.0 Alpha 1 is installed.$\nPlease uninstall it before running this installer."
+			MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita 3.0 Alpha 1 is installed. It must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+			           /SD IDYES \
+			           IDYES lbl_removeKrita3alpha
 			Abort
+			lbl_removeKrita3alpha:
+			push $R0
+			${MsiUninstall} $KritaMsiProductX64 $R0
+			${If} $R0 != 0
+				MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita 3.0 Alpha 1."
+				Abort
+			${EndIf}
+			pop $R0
+			StrCpy $KritaMsiProductX64 ""
 		${ElseIf} $KritaMsiProductX64 != ""
 			${If} $KritaMsiProductX86 != ""
-				MessageBox MB_OK|MB_ICONSTOP "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nPlease uninstall both of them before running this installer."
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nBoth must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you want to remove them now?" \
+				           /SD IDYES \
+				           IDYES lbl_removeKritaBoth
 				Abort
+				lbl_removeKritaBoth:
+				push $R0
+				${MsiUninstall} $KritaMsiProductX86 $R0
+				${If} $R0 != 0
+					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
+					Abort
+				${EndIf}
+				${MsiUninstall} $KritaMsiProductX64 $R0
+				${If} $R0 != 0
+					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
+					Abort
+				${EndIf}
+				pop $R0
+				StrCpy $KritaMsiProductX86 ""
+				StrCpy $KritaMsiProductX64 ""
 			${Else}
-				MessageBox MB_OK|MB_ICONSTOP "Krita (64-bit) 2.9 or below is installed.$\nPlease uninstall it before running this installer."
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+				           /SD IDYES \
+				           IDYES lbl_removeKritaX64
 				Abort
+				lbl_removeKritaX64:
+				push $R0
+				${MsiUninstall} $KritaMsiProductX64 $R0
+				${If} $R0 != 0
+					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
+					Abort
+				${EndIf}
+				pop $R0
+				StrCpy $KritaMsiProductX64 ""
 			${EndIf}
 		${EndIf}
 	${Endif}
 	${If} $KritaMsiProductX86 != ""
-		MessageBox MB_OK|MB_ICONSTOP "Krita (32-bit) 2.9 or below is installed.$\nPlease uninstall it before running this installer."
+		MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nIt must be removed before ${KRITA_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+		           /SD IDYES \
+		           IDYES lbl_removeKritaX86
 		Abort
+		lbl_removeKritaX86:
+		push $R0
+		${MsiUninstall} $KritaMsiProductX86 $R0
+		${If} $R0 != 0
+			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
+			Abort
+		${EndIf}
+		pop $R0
+		StrCpy $KritaMsiProductX86 ""
 	${EndIf}
-	# TODO: Offer to uninstall these old versions?
 
 	# TODO: Detect and abort on newer versions, and uninstall old versions without aborting (unless a version of different bitness is installed)
 	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
