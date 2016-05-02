@@ -68,7 +68,8 @@ ShowUninstDetails show
 !define MUI_LICENSEPAGE_CHECKBOX
 !insertmacro MUI_PAGE_LICENSE "license_gpl-2.0.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
-#!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_COMPONENTS
+!define MUI_PAGE_CUSTOMFUNCTION_PRE  func_ShellExLicensePage_Init
 !define MUI_PAGE_HEADER_TEXT "License Agreement (Krita Shell Extension)"
 !insertmacro MUI_PAGE_LICENSE "license.rtf"
 # TODO: More options?
@@ -84,6 +85,7 @@ ShowUninstDetails show
 
 !insertmacro MUI_LANGUAGE "English"
 
+!include Sections.nsh
 !include LogicLib.nsh
 !include x64.nsh
 
@@ -92,28 +94,6 @@ ShowUninstDetails show
 !include "include\FileExists2.nsh"
 !include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
-
-# ----[[
-
-!macro SelectSection_Macro SecId
-	Push $R0
-	SectionGetFlags ${SecId} $R0
-	IntOp $R0 $R0 | ${SF_SELECTED}
-	SectionSetFlags ${SecId} $R0
-	Pop $R0
-!macroend
-!define SelectSection '!insertmacro SelectSection_Macro'
-
-!macro DeselectSection_Macro SecId
-	Push $R0
-	SectionGetFlags ${SecId} $R0
-	IntOp $R0 $R0 ^ ${SF_SELECTED}
-	SectionSetFlags ${SecId} $R0
-	Pop $R0
-!macroend
-!define DeselectSection '!insertmacro DeselectSection_Macro'
-
-# ----]]
 
 Var KritaMsiProductX86
 Var KritaMsiProductX64
@@ -124,7 +104,7 @@ Var KritaNsisInstallLocation
 Var PrevShellExInstallLocation
 Var PrevShellExStandalone
 
-Section "Remove_shellex"
+Section "-Remove_shellex"
 	${If} ${FileExists} "$PrevShellExInstallLocation\uninstall.exe"
 		ExecWait "$PrevShellExInstallLocation\uninstall.exe /S _?=$PrevShellExInstallLocation"
 		Delete "$PrevShellExInstallLocation\uninstall.exe"
@@ -138,7 +118,7 @@ SectionEnd
 #	${EndIf}
 #SectionEnd
 
-Section "Thing"
+Section "-Thing"
 	SetOutPath $INSTDIR
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${KRITA_UNINSTALL_REGKEY}" \
 	                 "DisplayName" "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}"
@@ -178,6 +158,27 @@ Section "Thing"
 !else
 	DeleteRegValue HKLM "Software\Krita" "x64"
 !endif
+SectionEnd
+
+Section "${KRITA_PRODUCTNAME}" SEC_product_main
+	# TODO: Maybe switch to explicit file list?
+	File /r ${KRITA_PACKAGE_ROOT}\bin
+	File /r ${KRITA_PACKAGE_ROOT}\lib
+	File /r ${KRITA_PACKAGE_ROOT}\share
+SectionEnd
+
+Section "-Main_associate"
+	CreateDirectory ${KRITA_SHELLEX_DIR}
+	${Krita_RegisterFileAssociation} "$INSTDIR\bin\krita.exe"
+SectionEnd
+
+Section "Shell Integration" SEC_shellex
+	${If} ${RunningX64}
+		${Krita_RegisterComComonents} 64
+	${EndIf}
+	${Krita_RegisterComComonents} 32
+
+	${Krita_RegisterShellExtension}
 
 	#   ShellExtension\InstallLocation:
 	#     Where the shell extension is installed
@@ -200,46 +201,23 @@ Section "Thing"
 	                 "KritaExePath" "$INSTDIR\bin\krita.exe"
 SectionEnd
 
-Section "Main_Krita"
-	# TODO: Maybe switch to explicit file list?
-	File /r ${KRITA_PACKAGE_ROOT}\bin
-	File /r ${KRITA_PACKAGE_ROOT}\lib
-	File /r ${KRITA_PACKAGE_ROOT}\share
-SectionEnd
-
-Section "ShellEx_mkdir"
-	CreateDirectory ${KRITA_SHELLEX_DIR}
-SectionEnd
-
-Section "ShellEx_x64" SEC_shellex_x64
-	${Krita_RegisterComComonents} 64
-SectionEnd
-
-Section "ShellEx_x86"
-	${Krita_RegisterComComonents} 32
-SectionEnd
-
-Section "Main_associate"
-	${Krita_RegisterFileAssociation} "$INSTDIR\bin\krita.exe"
-SectionEnd
-
-Section "ShellEx_common"
-	${Krita_RegisterShellExtension}
-SectionEnd
-
-Section "Main_refreshShell"
+Section "-Main_refreshShell"
 	${RefreshShell}
 SectionEnd
 
-Section "un.ShellEx_common"
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_product_main} "Krita main program files."
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_shellex} "Shell Extension component to provide thumbnails and file properties display for Krita files."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+Section "un.Shell Integration"
+	DeleteRegKey HKLM "Software\Krita"
+
 	${Krita_UnregisterShellExtension}
-SectionEnd
 
-Section "un.ShellExn_x64" SEC_un_shellex_x64
-	${Krita_UnregisterComComonents} 64
-SectionEnd
-
-Section "un.ShellEx_x86"
+	${If} ${RunningX64}
+		${Krita_UnregisterComComonents} 64
+	${EndIf}
 	${Krita_UnregisterComComonents} 32
 SectionEnd
 
@@ -248,7 +226,7 @@ Section "un.Main_associate"
 	${Krita_UnregisterFileAssociation}
 SectionEnd
 
-Section "un.Main_Krita"
+Section "un.${KRITA_PRODUCTNAME}"
 	# TODO: Maybe switch to explicit file list or some sort of install log?
 	RMDir /r $INSTDIR\bin
 	RMDir /r $INSTDIR\lib
@@ -268,6 +246,7 @@ Section "un.Main_refreshShell"
 SectionEnd
 
 Function .onInit
+	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_RO}
 	MessageBox MB_OK|MB_ICONEXCLAMATION "This installer is experimental. Use only for testing."
 !ifdef KRITA_INSTALLER_64
 	${If} ${RunningX64}
@@ -284,8 +263,6 @@ Function .onInit
 		           IDYES lbl_allow32on64
 		Abort
 		lbl_allow32on64:
-	${Else}
-		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
 !endif
 	# Detect other Krita versions
@@ -397,8 +374,13 @@ Function un.onInit
 !else
 	${If} ${RunningX64}
 		SetRegView 64
-	${Else}
-		${DeselectSection} ${SEC_un_shellex_x64}
 	${Endif}
 !endif
+FunctionEnd
+
+Function func_ShellExLicensePage_Init
+	${IfNot} ${SectionIsSelected} ${SEC_shellex}
+		# Skip ShellEx license page if not selected
+		Abort
+	${EndIf}
 FunctionEnd
