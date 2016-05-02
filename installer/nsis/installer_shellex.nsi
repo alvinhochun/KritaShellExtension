@@ -47,28 +47,6 @@ VIAddVersionKey "OriginalFileName" "kritashellex_setup.exe"
 VIAddVersionKey "ProductName" "${KRITASHELLEX_PRODUCTNAME} Setup"
 VIAddVersionKey "ProductVersion" "${KRITASHELLEX_VERSION}"
 
-# ----[[
-
-!macro SelectSection_Macro SecId
-	Push $R0
-	SectionGetFlags ${SecId} $R0
-	IntOp $R0 $R0 | ${SF_SELECTED}
-	SectionSetFlags ${SecId} $R0
-	Pop $R0
-!macroend
-!define SelectSection '!insertmacro SelectSection_Macro'
-
-!macro DeselectSection_Macro SecId
-	Push $R0
-	SectionGetFlags ${SecId} $R0
-	IntOp $R0 $R0 ^ ${SF_SELECTED}
-	SectionSetFlags ${SecId} $R0
-	Pop $R0
-!macroend
-!define DeselectSection '!insertmacro DeselectSection_Macro'
-
-# ----]]
-
 Var KritaExePath
 Var KritaMsiProductX86
 Var KritaMsiProductX64
@@ -133,19 +111,16 @@ Section "Thing"
 	                 "KritaExePath" "$KritaExePath"
 SectionEnd
 
-Section "ShellEx_x64" SEC_shellex_x64
-	${Krita_RegisterComComonents} 64
-SectionEnd
-
-Section "ShellEx_x86"
-	${Krita_RegisterComComonents} 32
-SectionEnd
-
 Section "Main_associate"
 	${Krita_RegisterFileAssociation} $KritaExePath
 SectionEnd
 
-Section "ShellEx_common"
+Section "ShellEx"
+	${If} ${RunningX64}
+		${Krita_RegisterComComonents} 64
+	${EndIf}
+	${Krita_RegisterComComonents} 32
+
 	${Krita_RegisterShellExtension}
 SectionEnd
 
@@ -153,15 +128,12 @@ Section "Main_refreshShell"
 	${RefreshShell}
 SectionEnd
 
-Section "un.ShellEx_common"
+Section "un.ShellEx"
 	${Krita_UnregisterShellExtension}
-SectionEnd
 
-Section "un.ShellEx_x64" SEC_un_shellex_x64
-	${Krita_UnregisterComComonents} 64
-SectionEnd
-
-Section "un.ShellEx_x86"
+	${If} ${RunningX64}
+		${Krita_UnregisterComComonents} 64
+	${EndIf}
 	${Krita_UnregisterComComonents} 32
 SectionEnd
 
@@ -188,7 +160,6 @@ Function .onInit
 		StrCpy $InstDir "$PROGRAMFILES64\Krita Shell Extension"
 	${Else}
 		StrCpy $InstDir "$PROGRAMFILES32\Krita Shell Extension"
-		${DeselectSection} ${SEC_shellex_x64}
 	${Endif}
 	# Detect krita.exe shipped with package
 	push $R0
@@ -296,8 +267,6 @@ FunctionEnd
 Function un.onInit
 	${If} ${RunningX64}
 		SetRegView 64
-	${Else}
-		${DeselectSection} ${SEC_un_shellex_x64}
 	${Endif}
 FunctionEnd
 
