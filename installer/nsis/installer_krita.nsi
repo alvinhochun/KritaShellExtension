@@ -83,10 +83,7 @@ Var CreateDesktopIcon
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
 !insertmacro MUI_PAGE_STARTMENU Krita $KritaStartMenuFolder
 Page Custom func_DesktopShortcutPage_Init
-# TODO: More options?
-!define MUI_WELCOMEPAGE_TITLE "placeholder page"
-!define MUI_WELCOMEPAGE_TEXT "there should be shortcut options here I think? or what?$\r$\n$\r$\n$_CLICK"
-!insertmacro MUI_PAGE_WELCOME
+Page Custom func_BeforeInstallPage_Init
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -460,4 +457,24 @@ Function func_DesktopShortcutPage_CheckChange
 	${Else}
 		StrCpy $CreateDesktopIcon 0
 	${EndIf}
+FunctionEnd
+
+Function func_BeforeInstallPage_Init
+	push $R0
+
+	nsDialogs::Create 1018
+	pop $R0
+	${If} $R0 == error
+		Abort
+	${EndIf}
+	!insertmacro MUI_HEADER_TEXT "Confirm Installation" "Confirm installation of ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}."
+
+	${NSD_CreateLabel} 0u 0u 300u 140u "Setup is ready to install ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}. You may review the install options before you continue.$\r$\n$\r$\n$_CLICK"
+	pop $R0
+
+	# TODO: Add install option summary for review?
+
+	nsDialogs::Show
+
+	pop $R0
 FunctionEnd
