@@ -81,6 +81,7 @@ Var CreateDesktopIcon
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Krita"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
+!define MUI_STARTMENUPAGE_NODISABLE
 !insertmacro MUI_PAGE_STARTMENU Krita $KritaStartMenuFolder
 Page Custom func_DesktopShortcutPage_Init
 Page Custom func_BeforeInstallPage_Init
