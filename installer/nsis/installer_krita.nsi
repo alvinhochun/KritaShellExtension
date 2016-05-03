@@ -61,6 +61,8 @@ XPstyle on
 ShowInstDetails show
 ShowUninstDetails show
 
+Var KritaStartMenuFolder
+
 !include MUI2.nsh
 
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -74,6 +76,11 @@ ShowUninstDetails show
 !define MUI_PAGE_CUSTOMFUNCTION_PRE  func_ShellExLicensePage_Init
 !define MUI_PAGE_HEADER_TEXT "License Agreement (Krita Shell Extension)"
 !insertmacro MUI_PAGE_LICENSE "license.rtf"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Krita"
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Krita"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
+!insertmacro MUI_PAGE_STARTMENU Krita $KritaStartMenuFolder
 # TODO: More options?
 !define MUI_WELCOMEPAGE_TITLE "placeholder page"
 !define MUI_WELCOMEPAGE_TEXT "there should be shortcut options here I think? or what?$\r$\n$\r$\n$_CLICK"
@@ -160,6 +167,9 @@ Section "-Thing"
 !else
 	DeleteRegValue HKLM "Software\Krita" "x64"
 !endif
+	#   StartMenuFolder:
+	#     Start Menu Folder
+	#     Handled by Modern UI 2.0 MUI_PAGE_STARTMENU
 SectionEnd
 
 Section "${KRITA_PRODUCTNAME}" SEC_product_main
@@ -172,6 +182,16 @@ SectionEnd
 Section "-Main_associate"
 	CreateDirectory ${KRITA_SHELLEX_DIR}
 	${Krita_RegisterFileAssociation} "$INSTDIR\bin\krita.exe"
+SectionEnd
+
+Section "-Main_Shortcuts"
+	# Placing this after Krita_RegisterFileAssociation to get the icon
+	!insertmacro MUI_STARTMENU_WRITE_BEGIN Krita
+		CreateDirectory "$SMPROGRAMS\$KritaStartMenuFolder"
+		CreateShortcut "$SMPROGRAMS\$KritaStartMenuFolder\${KRITA_PRODUCTNAME}.lnk" "$INSTDIR\bin\krita.exe" "" "$INSTDIR\shellex\krita.ico" 0
+		CreateDirectory "$SMPROGRAMS\$KritaStartMenuFolder\Tools"
+		CreateShortcut "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall Krita.lnk" "$INSTDIR\Uninstall.exe"
+	!insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
 Section "Shell Integration" SEC_shellex
@@ -228,6 +248,14 @@ Section "un.Main_associate"
 	${Krita_UnregisterFileAssociation}
 SectionEnd
 
+Section "un.Main_Shortcuts"
+	!insertmacro MUI_STARTMENU_GETFOLDER Krita $KritaStartMenuFolder
+	Delete "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall Krita.lnk"
+	RMDir "$SMPROGRAMS\$KritaStartMenuFolder\Tools"
+	Delete "$SMPROGRAMS\$KritaStartMenuFolder\${KRITA_PRODUCTNAME}.lnk"
+	RMDir "$SMPROGRAMS\$KritaStartMenuFolder"
+SectionEnd
+
 Section "un.${KRITA_PRODUCTNAME}"
 	# TODO: Maybe switch to explicit file list or some sort of install log?
 	RMDir /r $INSTDIR\bin
@@ -248,6 +276,7 @@ Section "un.Main_refreshShell"
 SectionEnd
 
 Function .onInit
+	SetShellVarContext all
 	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_RO}
 	MessageBox MB_OK|MB_ICONEXCLAMATION "This installer is experimental. Use only for testing."
 !ifdef KRITA_INSTALLER_64
@@ -367,6 +396,7 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
+	SetShellVarContext all
 !ifdef KRITA_INSTALLER_64
 	${If} ${RunningX64}
 		SetRegView 64

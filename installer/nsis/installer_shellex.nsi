@@ -157,6 +157,7 @@ Section "un.Main_refreshShell"
 SectionEnd
 
 Function .onInit
+	SetShellVarContext all
 	${If} ${RunningX64}
 		SetRegView 64
 		StrCpy $InstDir "$PROGRAMFILES64\Krita Shell Extension"
@@ -267,6 +268,7 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
+	SetShellVarContext all
 	${If} ${RunningX64}
 		SetRegView 64
 	${Endif}
