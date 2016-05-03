@@ -62,6 +62,7 @@ ShowInstDetails show
 ShowUninstDetails show
 
 Var KritaStartMenuFolder
+Var CreateDesktopIcon
 
 !include MUI2.nsh
 
@@ -81,6 +82,7 @@ Var KritaStartMenuFolder
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Krita"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuFolder"
 !insertmacro MUI_PAGE_STARTMENU Krita $KritaStartMenuFolder
+Page Custom func_DesktopShortcutPage_Init
 # TODO: More options?
 !define MUI_WELCOMEPAGE_TITLE "placeholder page"
 !define MUI_WELCOMEPAGE_TEXT "there should be shortcut options here I think? or what?$\r$\n$\r$\n$_CLICK"
@@ -190,8 +192,12 @@ Section "-Main_Shortcuts"
 		CreateDirectory "$SMPROGRAMS\$KritaStartMenuFolder"
 		CreateShortcut "$SMPROGRAMS\$KritaStartMenuFolder\${KRITA_PRODUCTNAME}.lnk" "$INSTDIR\bin\krita.exe" "" "$INSTDIR\shellex\krita.ico" 0
 		CreateDirectory "$SMPROGRAMS\$KritaStartMenuFolder\Tools"
-		CreateShortcut "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall Krita.lnk" "$INSTDIR\Uninstall.exe"
+		CreateShortcut "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall ${KRITA_PRODUCTNAME}.lnk" "$INSTDIR\Uninstall.exe"
 	!insertmacro MUI_STARTMENU_WRITE_END
+	${If} $CreateDesktopIcon == 1
+		# For the desktop icon, keep the name short and omit version info
+		CreateShortcut "$DESKTOP\Krita.lnk" "$INSTDIR\bin\krita.exe" "" "$INSTDIR\shellex\krita.ico" 0
+	${EndIf}
 SectionEnd
 
 Section "Shell Integration" SEC_shellex
@@ -278,6 +284,7 @@ SectionEnd
 Function .onInit
 	SetShellVarContext all
 	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_RO}
+	StrCpy $CreateDesktopIcon 1 # Create desktop icon by default
 	MessageBox MB_OK|MB_ICONEXCLAMATION "This installer is experimental. Use only for testing."
 !ifdef KRITA_INSTALLER_64
 	${If} ${RunningX64}
@@ -414,5 +421,43 @@ Function func_ShellExLicensePage_Init
 	${IfNot} ${SectionIsSelected} ${SEC_shellex}
 		# Skip ShellEx license page if not selected
 		Abort
+	${EndIf}
+FunctionEnd
+
+Var hwndChkDesktopIcon
+
+Function func_DesktopShortcutPage_Init
+	push $R0
+
+	nsDialogs::Create 1018
+	pop $R0
+	${If} $R0 == error
+		Abort
+	${EndIf}
+	!insertmacro MUI_HEADER_TEXT "Desktop Icon" "Configure desktop shortcut icon."
+
+	${NSD_CreateLabel} 0u 0u 300u 20u "You can choose to create a shortcut icon on the desktop for launching Krita."
+	pop $R0
+
+	${NSD_CreateCheckbox} 0u 20u 300u 10u "Create a desktop icon"
+	pop $hwndChkDesktopIcon
+	${If} $CreateDesktopIcon == 1
+		${NSD_Check} $hwndChkDesktopIcon
+	${Else}
+		${NSD_Uncheck} $hwndChkDesktopIcon
+	${EndIf}
+	${NSD_OnChange} $hwndChkDesktopIcon func_DesktopShortcutPage_CheckChange
+
+	nsDialogs::Show
+
+	pop $R0
+FunctionEnd
+
+Function func_DesktopShortcutPage_CheckChange
+	${NSD_GetState} $hwndChkDesktopIcon $CreateDesktopIcon
+	${If} $CreateDesktopIcon == ${BST_CHECKED}
+		StrCpy $CreateDesktopIcon 1
+	${Else}
+		StrCpy $CreateDesktopIcon 0
 	${EndIf}
 FunctionEnd
