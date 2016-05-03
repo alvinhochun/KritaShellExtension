@@ -79,6 +79,7 @@
 
 !macro Krita_RegisterFileAssociation_Macro KritaExePath
 	File "/oname=${KRITA_SHELLEX_DIR}\kritafile.ico" kritafile.ico
+	File "/oname=${KRITA_SHELLEX_DIR}\krita.ico" krita.ico
 	# Remove existing associations (really though?)
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
@@ -95,6 +96,13 @@
 	                 "FriendlyTypeName" "Krita Image File"
 	WriteRegStr HKCR "Krita.Document\DefaultIcon" \
 	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
+	# Set Thumbnail Overlay
+	# Do this even if not installing thumbnail handler, since thumbnails
+	# will show as long as they exist in the thumbnail cache, and if the
+	# associated open command has no icon resources it will show an ugly
+	# "unknown filetype" icon.
+	WriteRegStr HKCR "Krita.Document" \
+	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	# Open Command
 	${If} ${KritaExePath} != ""
 		WriteRegStr HKCR "Krita.Document\shell\open\command" \
@@ -107,6 +115,8 @@
 
 !macro Krita_UnregisterFileAssociation_Macro
 	Delete ${KRITA_SHELLEX_DIR}\kritafile.ico
+	Delete ${KRITA_SHELLEX_DIR}\krita.ico
+	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
 	# TODO: Maybe refine these a bit
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
@@ -116,7 +126,6 @@
 !define Krita_UnregisterFileAssociation '!insertmacro Krita_UnregisterFileAssociation_Macro'
 
 !macro Krita_RegisterShellExtension_Macro
-	File "/oname=${KRITA_SHELLEX_DIR}\krita.ico" krita.ico
 	# Register as IThumbnailProvider
 	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
 	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
@@ -130,9 +139,6 @@
 	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
 	WriteRegStr HKCR "Krita.Document" \
 	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
-	# Set Thumbnail Overlay
-	WriteRegStr HKCR "Krita.Document" \
-	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 !macroend
 !define Krita_RegisterShellExtension '!insertmacro Krita_RegisterShellExtension_Macro'
 
@@ -142,7 +148,5 @@
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"
-	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
-	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 !macroend
 !define Krita_UnregisterShellExtension '!insertmacro Krita_UnregisterShellExtension_Macro'
