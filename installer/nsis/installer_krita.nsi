@@ -281,6 +281,7 @@ Section "un.Main_associate"
 SectionEnd
 
 Section "un.Main_Shortcuts"
+	Delete "$DESKTOP\Krita.lnk"
 	!insertmacro MUI_STARTMENU_GETFOLDER Krita $KritaStartMenuFolder
 	Delete "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall Krita.lnk"
 	RMDir "$SMPROGRAMS\$KritaStartMenuFolder\Tools"
