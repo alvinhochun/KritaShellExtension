@@ -278,6 +278,8 @@ FunctionEnd
 
 Function func_KritaConfigPage_Init
 	${NSD_SetText} $hCtl_KritaConfigPage_TextBoxKritaExePath $KritaExePath
+	${NSD_SetFocus} $hCtl_KritaConfigPage_TextBoxKritaExePath
+	SendMessage $hCtl_KritaConfigPage_TextBoxKritaExePath ${EM_SETSEL} 0 -1
 FunctionEnd
 
 Function func_KritaConfigPage_browse
