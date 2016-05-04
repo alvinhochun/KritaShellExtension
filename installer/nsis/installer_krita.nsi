@@ -260,8 +260,8 @@ SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_remove_old_version} "Remove previously installed Krita $KritaNsisVersion ($KritaNsisBitness-bit)."
-	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_product_main} "Krita main program files."
-	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_shellex} "Shell Extension component to provide thumbnails and file properties display for Krita files."
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_product_main} "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}$\r$\n$\r$\nVersion: ${KRITA_VERSION}"
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_shellex} "Shell Extension component to provide thumbnails and file properties display for Krita files.$\r$\n$\r$\nVersion: ${KRITASHELLEX_VERSION}"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "un.Shell Integration"
@@ -283,7 +283,7 @@ SectionEnd
 Section "un.Main_Shortcuts"
 	Delete "$DESKTOP\Krita.lnk"
 	!insertmacro MUI_STARTMENU_GETFOLDER Krita $KritaStartMenuFolder
-	Delete "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall Krita.lnk"
+	Delete "$SMPROGRAMS\$KritaStartMenuFolder\Tools\Uninstall ${KRITA_PRODUCTNAME}.lnk"
 	RMDir "$SMPROGRAMS\$KritaStartMenuFolder\Tools"
 	Delete "$SMPROGRAMS\$KritaStartMenuFolder\${KRITA_PRODUCTNAME}.lnk"
 	RMDir "$SMPROGRAMS\$KritaStartMenuFolder"
