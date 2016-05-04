@@ -114,18 +114,45 @@ Var PrevShellExInstallLocation
 Var PrevShellExStandalone
 
 Section "-Remove_shellex"
-	${If} ${FileExists} "$PrevShellExInstallLocation\uninstall.exe"
-		ExecWait "$PrevShellExInstallLocation\uninstall.exe /S _?=$PrevShellExInstallLocation"
+	${If} $PrevShellExInstallLocation != ""
+	${AndIf} $PrevShellExStandalone == 1
+	${AndIf} ${FileExists} "$PrevShellExInstallLocation\uninstall.exe"
+		push $R0
+		DetailPrint "Removing Krita Shell Integration..."
+		SetDetailsPrint listonly
+		ExecWait "$PrevShellExInstallLocation\uninstall.exe /S _?=$PrevShellExInstallLocation" $R0
+		${If} $R0 != 0
+			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita Shell Extension."
+			SetDetailsPrint both
+			DetailPrint "Failed to remove Krita Shell Integration."
+			Abort
+		${EndIf}
 		Delete "$PrevShellExInstallLocation\uninstall.exe"
+		SetDetailsPrint lastused
+		DetailPrint "Krita Shell Integration removed."
+		pop $R0
 	${EndIf}
 SectionEnd
 
-#Section "Remove_prev_version"
-#	${If} ${FileExists} "$KritaNsisInstallLocation\uninstall.exe"
-#		ExecWait "$KritaNsisInstallLocation\uninstall.exe /S _?=$KritaNsisInstallLocation"
-#		Delete "$KritaNsisInstallLocation\uninstall.exe"
-#	${EndIf}
-#SectionEnd
+Section "Remove Old Version" SEC_remove_old_version
+	${If} $KritaNsisInstallLocation != ""
+	${AndIf} ${FileExists} "$KritaNsisInstallLocation\uninstall.exe"
+		push $R0
+		DetailPrint "Removing previous version..."
+		SetDetailsPrint listonly
+		ExecWait "$KritaNsisInstallLocation\uninstall.exe /S _?=$KritaNsisInstallLocation" $R0
+		${If} $R0 != 0
+			MessageBox MB_OK|MB_ICONSTOP "Failed to remove previous version of Krita."
+			SetDetailsPrint both
+			DetailPrint "Failed to remove previous version of Krita."
+			Abort
+		${EndIf}
+		Delete "$KritaNsisInstallLocation\uninstall.exe"
+		SetDetailsPrint lastused
+		DetailPrint "Previous version removed."
+		pop $R0
+	${EndIf}
+SectionEnd
 
 Section "-Thing"
 	SetOutPath $INSTDIR
@@ -232,6 +259,7 @@ Section "-Main_refreshShell"
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_remove_old_version} "Remove previously installed Krita $KritaNsisVersion ($KritaNsisBitness-bit)."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_product_main} "Krita main program files."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_shellex} "Shell Extension component to provide thumbnails and file properties display for Krita files."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -282,6 +310,8 @@ SectionEnd
 Function .onInit
 	SetShellVarContext all
 	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_RO}
+	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_BOLD}
+	!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_RO}
 	StrCpy $CreateDesktopIcon 1 # Create desktop icon by default
 	MessageBox MB_OK|MB_ICONEXCLAMATION "This installer is experimental. Use only for testing."
 !ifdef KRITA_INSTALLER_64
@@ -377,8 +407,12 @@ Function .onInit
 	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
 	${If} $KritaNsisVersion != ""
 		#MessageBox MB_OK|MB_ICONEXCLAMATION "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed. It will be uninstalled before this version is installed."
-		MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed.$\nPlease uninstall it before running this installer."
-		Abort
+		#MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed.$\nPlease uninstall it before running this installer."
+		#Abort
+		!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
+	${Else}
+		!insertmacro ClearSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
+		SectionSetText ${SEC_remove_old_version} ""
 	${EndIf}
 
 	# Detect standalone shell extension
