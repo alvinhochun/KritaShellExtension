@@ -42,7 +42,7 @@ This software uses the following libraries:
 - TinyXML-2 - zlib license https://github.com/leethomason/tinyxml2
 
 For the license information on these libraries, you can either refer
-to the URLs shown above, or refer to the corresponding `COPYING` files
+to the above URLs, or refer to the corresponding `COPYING` files
 included in the source tree and/or binary release package.
 
 
@@ -52,12 +52,15 @@ System Requirements
 This shell extension requires Windows Vista or above. It does not
 work on Windows XP and previous versions of Windows.
 
-The binaries were compiled using Visual Studio 2015, so the Visual
-C++ Runtime Libraries 2015 would be needed for this to run properly.
+The binaries were compiled using Visual Studio 2015. They are linked
+statically against the C++ runtime, so no extra runtime libraries are
+needed for this to work.
 
 
 Installing
 ----------
+
+Executing the installer should work without any trouble.
 
 If you would like to install the shell extension manually, please
 follow these steps:
@@ -81,7 +84,9 @@ follow these steps:
 4. (For 64-bit system only:) Execute `regsvr32 /u kritashellex64.dll`
 5. Delete the two dll files.
 
-*TODO*: Registry changes for properties from the property handler
+Additional registry changes are needed for properties from the
+property handler to show up in Windows Explorer. You can refer to the
+GitHub Wiki page or the NSIS installer scripts.
 
 
 Using
@@ -111,28 +116,31 @@ Example build commands:
 
 - Visual Studio 2015 64-bit build:
 
-	cmake -G "Visual Studio 14 2015 Win64" <path_to_source>
-	cmake --build . --config RelWithDebInfo
+		cmake -G "Visual Studio 14 2015 Win64" <path_to_source>
+		cmake --build . --config Release
 
 - NMake (within Visual Studio command prompt):
 
-	cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo <path_to_source>
-	cmake --build .
+		cmake -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release <path_to_source>
+		cmake --build .
 
 Currently, the project does not include an install target. You will
 have to copy the output manually or using an external script. The
 output DLL is located at
 
-	`<build_dir>\KritaShellExtension\<config>\kritashellex.dll`
+	<build_dir>\KritaShellExtension\<config>\kritashellex.dll
 
 or
 
-	`<build_dir>\KritaShellExtension\kritashellex.dll`
+	<build_dir>\KritaShellExtension\kritashellex.dll
 
 depending on the generator you use.
 
-You may want to rename the output files into `kritashellex32.dll` and
+You should rename the output files into `kritashellex32.dll` and
 `kritashellex64.dll` to avoid confusion.
+
+To build the NSIS installer, refer to the readme file under
+`installer/nsis`.
 
 
 Additional Information
