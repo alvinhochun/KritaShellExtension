@@ -27,7 +27,7 @@ Function func_KritaConfigPage_Create
 	;Pop $hCtl_KritaConfigPage_CheckBoxAssociate
 
 	; === GroupBox (type: GroupBox) ===
-	${NSD_CreateGroupBox} 0u 60u 300u 35u "Path to krita.exe"
+	${NSD_CreateGroupBox} 0u 60u 300u 35u "Path to krita.exe (leave empty to skip)"
 	Pop $hCtl_KritaConfigPage_GroupBox
 
 	; === TextBoxKritaExePath (type: Text) ===
