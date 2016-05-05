@@ -9,6 +9,12 @@
 	!error "KRITA_PACKAGE_ROOT should be defined and point to the root of the package files."
 !endif
 
+!ifdef KRITA_INSTALLER_64
+	!define KRITA_INSTALLER_BITNESS 64
+!else
+	!define KRITA_INSTALLER_BITNESS 32
+!endif
+
 Unicode true
 
 # Krita constants (can be overridden in command line params)
@@ -97,6 +103,7 @@ Page Custom func_BeforeInstallPage_Init
 !include Sections.nsh
 !include LogicLib.nsh
 !include x64.nsh
+!include WordFunc.nsh
 
 !define KRITA_SHELLEX_DIR "$INSTDIR\shellex"
 
@@ -404,13 +411,44 @@ Function .onInit
 		StrCpy $KritaMsiProductX86 ""
 	${EndIf}
 
-	# TODO: Detect and abort on newer versions, and uninstall old versions without aborting (unless a version of different bitness is installed)
 	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
 	${If} $KritaNsisVersion != ""
-		#MessageBox MB_OK|MB_ICONEXCLAMATION "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed. It will be uninstalled before this version is installed."
-		#MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed.$\nPlease uninstall it before running this installer."
-		#Abort
+		push $R0
+		${VersionCompare} "${KRITA_VERSION}" "$KritaNsisVersion" $R0
+		${If} $R0 == 0
+			# Same version installed... probably
+			${If} $KritaNsisBitness == ${KRITA_INSTALLER_BITNESS}
+				# Very likely the same version
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that ${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} is already installed.$\nThis setup will reinstall it."
+			${Else}
+				# Very likely the same version but different arch
+!ifdef KRITA_INSTALLER_64
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita 32-bit ${KRITA_VERSION_DISPLAY} is currently installed. This setup will replace it with the 64-bit version."
+!else
+				MessageBox MB_OK|MB_ICONEXCLAMATION "It appears that Krita 64-bit ${KRITA_VERSION_DISPLAY} is currently installed. This setup will replace it with the 32-bit version."
+!endif
+			${EndIf}
+		${ElseIf} $R0 == 1
+			# Upgrade
+			${If} $KritaNsisBitness == ${KRITA_INSTALLER_BITNESS}
+				# Slient about upgrade
+			${Else}
+				# Upgrade but different arch
+!ifdef KRITA_INSTALLER_64
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita 32-bit ($KritaNsisVersion) is currently installed. This setup will replace it with the 64-bit version of Krita ${KRITA_VERSION_DISPLAY}."
+!else
+				MessageBox MB_OK|MB_ICONEXCLAMATION "It appears that Krita 64-bit ($KritaNsisVersion) is currently installed. This setup will replace it with the 32-bit version of Krita ${KRITA_VERSION_DISPLAY}."
+!endif
+			${EndIf}
+		${ElseIf} $R0 == 2
+			MessageBox MB_OK|MB_ICONSTOP "It appears that a newer version of Krita $KritaNsisBitness-bit ($KritaNsisVersion) is currently installed. If you want to downgrade Krita to ${KRITA_VERSION_DISPLAY}, please uninstall the newer version manually before running this setup."
+			Abort
+		${Else}
+			MessageBox MB_OK|MB_ICONSTOP "Unexpected state"
+			Abort
+		${EndIf}
 		!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
+		pop $R0
 	${Else}
 		!insertmacro ClearSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
 		SectionSetText ${SEC_remove_old_version} ""
