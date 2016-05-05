@@ -261,7 +261,8 @@ Function .onInit
 		# Shouldn't reach this??? We've already checked for Krita version above
 		# Whatever we'll just pass
 	${EndIf}
-	${If} ${FileExists} $PrevKritaExePath
+	${If} $KritaExePath == ""
+	${AndIf} ${FileExists} $PrevKritaExePath
 		StrCpy $KritaExePath $PrevKritaExePath
 	${EndIf}
 	# TODO: Compare versions?
