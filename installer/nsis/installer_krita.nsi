@@ -120,7 +120,7 @@ Var KritaNsisInstallLocation
 Var PrevShellExInstallLocation
 Var PrevShellExStandalone
 
-Section "-Remove_shellex"
+Section "-Remove_shellex" SEC_remove_shellex
 	${If} $PrevShellExInstallLocation != ""
 	${AndIf} $PrevShellExStandalone == 1
 	${AndIf} ${FileExists} "$PrevShellExInstallLocation\uninstall.exe"
@@ -266,6 +266,7 @@ Section "-Main_refreshShell"
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_remove_shellex} "Remove previously installed Krita Shell Integration."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_remove_old_version} "Remove previously installed Krita $KritaNsisVersion ($KritaNsisBitness-bit)."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_product_main} "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY}$\r$\n$\r$\nVersion: ${KRITA_VERSION}"
 	!insertmacro MUI_DESCRIPTION_TEXT ${SEC_shellex} "Shell Extension component to provide thumbnails and file properties display for Krita files.$\r$\n$\r$\nVersion: ${KRITASHELLEX_VERSION}"
@@ -465,11 +466,16 @@ Function .onInit
 		# TODO: Assume no previous version installed or what?
 	${EndIf}
 	${If} $PrevShellExStandalone == 1
-		MessageBox MB_YESNO|MB_ICONQUESTION "Krita Shell Integration is already installed separately. It will be uninstalled automatically when installing Krita.$\nDo you want to continue?" \
+		MessageBox MB_YESNO|MB_ICONQUESTION "Krita Shell Integration was installed separately. It will be uninstalled automatically when installing Krita.$\nDo you want to continue?" \
 		           /SD IDYES \
 		           IDYES lbl_allowremoveshellex
 		Abort
 		lbl_allowremoveshellex:
+		!insertmacro SetSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
+		pop $R0
+	${Else}
+		!insertmacro ClearSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
+		SectionSetText ${SEC_remove_shellex} ""
 	${EndIf}
 FunctionEnd
 
