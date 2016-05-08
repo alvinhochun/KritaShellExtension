@@ -83,7 +83,6 @@
 	# Remove existing associations (really though?)
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
-	DeleteRegKey HKCR "krafile"
 	# Register .kra
 	WriteRegStr HKCR ".kra" \
 	                 "" "Krita.Document"
@@ -103,10 +102,47 @@
 	# "unknown filetype" icon.
 	WriteRegStr HKCR "Krita.Document" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
-	# Open Command
 	${If} ${KritaExePath} != ""
+		# Open Command
 		WriteRegStr HKCR "Krita.Document\shell\open\command" \
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		WriteRegStr HKCR "Krita.Document\shell\open" \
+						 "FriendlyAppName" "Krita"
+		#Register OpenWithProgIds
+		WriteRegStr HKCR ".kra\OpenWithProgIds" \
+						 "Krita.Document" ""
+		# Default Program (Vista+)
+		WriteRegStr HKLM "Software\Krita\Capabilities" \
+		                 "ApplicationDescription" "The free sketching and painting program."
+		#WriteRegStr HKLM "Software\Krita\Capabilities" \
+		#                 "ApplicationIcon" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+		WriteRegStr HKLM "Software\Krita\Capabilities" \
+		                 "ApplicationName" "Krita"
+		#WriteRegStr HKLM "Software\Krita\Capabilities\DefaultIcon" \
+		#                 "" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
+		                 ".kra" "Krita.Document"
+		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
+		                 "application/x-krita" "Krita.Document"
+		WriteRegStr HKLM "Software\Krita\Capabilities\shell\open\command" \
+						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		WriteRegStr HKLM "Software\Krita\Capabilities\shell\open" \
+						 "FriendlyAppName" "Krita"
+		WriteRegStr HKLM "Software\Krita\Capabilities" \
+						 "Krita" "Software\Krita\Capabilities"
+		# Registration registry keys
+		# This `FriendlyAppName` value is documented but doesn't seem to be used
+		WriteRegStr HKCR "Applications\krita.exe" \
+						 "FriendlyAppName" "Krita"
+		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
+						 ".kra" ""
+		#WriteRegStr HKCR "Applications\krita.exe\DefaultIcon" \
+		#                 "" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+		WriteRegStr HKCR "Applications\krita.exe\shell\open\command" \
+						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		# This `FriendlyAppName` value is undocumented but is used in practice
+		WriteRegStr HKCR "Applications\krita.exe\shell\open" \
+						 "FriendlyAppName" "Krita"
 	${EndIf}
 	# TODO: .ora
 	# TODO: MINE types
@@ -118,6 +154,8 @@
 	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
 	# TODO: Maybe refine these a bit
+	DeleteRegKey HKLM "Software\Krita\Capabilities"
+	DeleteRegKey HKCR "Applications\krita.exe"
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR "Krita.Document"
 	# TODO: .ora
