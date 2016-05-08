@@ -470,11 +470,10 @@ Function .onInit
 		           IDYES lbl_allowremoveshellex
 		Abort
 		lbl_allowremoveshellex:
-		!insertmacro SetSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
-		pop $R0
+		#!insertmacro SetSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
 	${Else}
-		!insertmacro ClearSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
-		SectionSetText ${SEC_remove_shellex} ""
+		#!insertmacro ClearSectionFlag ${SEC_remove_shellex} ${SF_SELECTED}
+		#SectionSetText ${SEC_remove_shellex} ""
 	${EndIf}
 FunctionEnd
 
