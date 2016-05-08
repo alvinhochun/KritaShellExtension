@@ -322,7 +322,6 @@ Function .onInit
 	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_BOLD}
 	!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_RO}
 	StrCpy $CreateDesktopIcon 1 # Create desktop icon by default
-	MessageBox MB_OK|MB_ICONEXCLAMATION "This installer is experimental. Use only for testing."
 !ifdef KRITA_INSTALLER_64
 	${If} ${RunningX64}
 		SetRegView 64
