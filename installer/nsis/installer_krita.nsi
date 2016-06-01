@@ -521,7 +521,7 @@ Function func_DesktopShortcutPage_Init
 	${Else}
 		${NSD_Uncheck} $hwndChkDesktopIcon
 	${EndIf}
-	${NSD_OnChange} $hwndChkDesktopIcon func_DesktopShortcutPage_CheckChange
+	${NSD_OnClick} $hwndChkDesktopIcon func_DesktopShortcutPage_CheckChange
 
 	nsDialogs::Show
 
