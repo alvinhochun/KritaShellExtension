@@ -153,7 +153,7 @@
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKLM "Software\Krita\Capabilities\shell\open" \
 						 "FriendlyAppName" "Krita"
-		WriteRegStr HKLM "Software\Krita\Capabilities" \
+		WriteRegStr HKLM "Software\RegisteredApplications" \
 						 "Krita" "Software\Krita\Capabilities"
 		# Registration registry keys
 		# This `FriendlyAppName` value is documented but doesn't seem to be used
@@ -180,6 +180,7 @@
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.OpenRaster" "TypeOverlay"
 	# TODO: Maybe refine these a bit
+	DeleteRegValue HKLM "Software\RegisteredApplications" "Krita"
 	DeleteRegKey HKLM "Software\Krita\Capabilities"
 	DeleteRegKey HKCR "Applications\krita.exe"
 	DeleteRegKey HKCR ".kra"
