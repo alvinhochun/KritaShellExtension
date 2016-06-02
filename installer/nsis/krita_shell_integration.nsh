@@ -196,8 +196,12 @@
 	# Register as IThumbnailProvider
 	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
 	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
+	WriteRegStr HKCR ".ora\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
+	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	# Set PerceivedType
 	WriteRegStr HKCR ".kra" \
+	                 "PerceivedType" "Image"
+	WriteRegStr HKCR ".ora" \
 	                 "PerceivedType" "Image"
 	# Set Property Lists
 	WriteRegStr HKCR "Krita.Document" \
@@ -212,6 +216,8 @@
 !macro Krita_UnregisterShellExtension_Macro
 	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
 	DeleteRegKey /ifempty HKCR ".kra\shellex\"
+	DeleteRegKey HKCR ".ora\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
+	DeleteRegKey /ifempty HKCR ".ora\shellex\"
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"

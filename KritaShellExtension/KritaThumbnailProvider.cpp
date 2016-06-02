@@ -161,13 +161,22 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(IStream *pStream, UIN
 		return E_NOTIMPL;
 	}
 
-	const char *szImageFileName = "preview.png";
+	const char *szImageFileName = nullptr;
 	if (cx > 256) {
 		szImageFileName = "mergedimage.png";
 	}
+
 	zip_stat_t fstat;
-	if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
-		return E_NOTIMPL;
+	if (!szImageFileName || zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
+		// Try preview.png for .kra files
+		szImageFileName = "preview.png";
+		if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
+			// Try Thumbnails/thumbnail.png for .ora files
+			szImageFileName = "Thumbnails/thumbnail.png";
+			if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
+				return E_NOTIMPL;
+			}
+		}
 	}
 
 	zip_ptr<zip_file_t> file(zip_fopen(zf.get(), szImageFileName, ZIP_FL_UNCHANGED));
