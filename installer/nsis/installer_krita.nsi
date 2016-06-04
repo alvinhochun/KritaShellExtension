@@ -103,6 +103,7 @@ Page Custom func_BeforeInstallPage_Init
 !include Sections.nsh
 !include LogicLib.nsh
 !include x64.nsh
+!include WinVer.nsh
 !include WordFunc.nsh
 
 !define KRITA_SHELLEX_DIR "$INSTDIR\shellex"
@@ -322,6 +323,10 @@ Function .onInit
 	!insertmacro SetSectionFlag ${SEC_product_main} ${SF_BOLD}
 	!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_RO}
 	StrCpy $CreateDesktopIcon 1 # Create desktop icon by default
+	${IfNot} ${AtLeastWin7}
+		MessageBox MB_OK|MB_ICONSTOP "${KRITA_PRODUCTNAME} ${KRITA_VERSION_DISPLAY} requires Windows 7 or above."
+		Abort
+	${EndIf}
 !ifdef KRITA_INSTALLER_64
 	${If} ${RunningX64}
 		SetRegView 64

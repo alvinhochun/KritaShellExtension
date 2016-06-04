@@ -31,6 +31,7 @@ Page Custom func_KritaConfigPage_Show
 
 !include LogicLib.nsh
 !include x64.nsh
+!include WinVer.nsh
 
 !include "include\KritaConfigPage.nsh"
 !include "include\FileExists2.nsh"
@@ -158,6 +159,10 @@ SectionEnd
 
 Function .onInit
 	SetShellVarContext all
+	${IfNot} ${AtLeastWin7}
+		MessageBox MB_OK|MB_ICONSTOP "${KRITASHELLEX_PRODUCTNAME} requires Windows 7 or above."
+		Abort
+	${EndIf}
 	${If} ${RunningX64}
 		SetRegView 64
 		StrCpy $InstDir "$PROGRAMFILES64\Krita Shell Extension"
