@@ -166,20 +166,37 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(IStream *pStream, UIN
 		szImageFileName = "mergedimage.png";
 	}
 
-	zip_stat_t fstat;
-	if (!szImageFileName || zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
+	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
 		// Try preview.png for .kra files
 		szImageFileName = "preview.png";
-		if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
+		if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
 			// Try Thumbnails/thumbnail.png for .ora files
 			szImageFileName = "Thumbnails/thumbnail.png";
-			if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
-				return E_NOTIMPL;
+			if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+				if (cx > 256) {
+					return E_NOTIMPL;
+				} else {
+					// Try mergedimage.png if thumbnail can't be used
+					szImageFileName = "mergedimage.png";
+					if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+						return E_NOTIMPL;
+					}
+				}
 			}
 		}
 	}
 
-	zip_ptr<zip_file_t> file(zip_fopen(zf.get(), szImageFileName, ZIP_FL_UNCHANGED));
+	return S_OK;
+}
+
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(zip_t *const zf, UINT cx, const char *const filename, HGLOBAL &hImageContent_out)
+{
+	zip_stat_t fstat;
+	if (zip_stat(zf, filename, ZIP_FL_UNCHANGED, &fstat) != 0) {
+		return E_NOTIMPL;
+	}
+
+	zip_ptr<zip_file_t> file(zip_fopen(zf, filename, ZIP_FL_UNCHANGED));
 	if (!file) {
 		return E_NOTIMPL;
 	}

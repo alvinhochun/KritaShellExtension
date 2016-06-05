@@ -23,6 +23,10 @@
 
 #pragma once
 
+#include <zip.h>
+
+#include <memory>
+
 #include <windows.h>
 #include <thumbcache.h>
 
@@ -59,6 +63,7 @@ protected:
 
 private:
 	static HRESULT getThumbnailPngFromArchive(IStream *pStream, UINT cx, HGLOBAL &hImageContent_out);
+	static HRESULT getThumbnailPngFromArchiveByName(zip_t *const zf, UINT cx, const char *const filename, HGLOBAL &hImageContent_out);
 	static HRESULT getThumbnailFromPngStream(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 	static HRESULT getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 };
