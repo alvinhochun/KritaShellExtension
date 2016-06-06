@@ -44,6 +44,8 @@
 	                 "ThreadingModel" "Apartment"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
 	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.ora" \
+	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	SetRegView lastused
 !macroend
 !define Krita_RegisterComComonents '!insertmacro Krita_RegisterComComonents_Macro'
@@ -51,6 +53,7 @@
 !macro Krita_UnregisterComComonents_Macro Bits
 	SetRegView ${Bits}
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.ora"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	${RefreshShell}
@@ -210,6 +213,12 @@
 	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
 	WriteRegStr HKCR "Krita.Document" \
 	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
+	WriteRegStr HKCR "Krita.OpenRaster" \
+	                 "PreviewDetails" "prop:System.DateModified;System.Size;System.DateCreated;*System.Image.Dimensions;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith"
+	WriteRegStr HKCR "Krita.OpenRaster" \
+	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
+	WriteRegStr HKCR "Krita.OpenRaster" \
+	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
 !macroend
 !define Krita_RegisterShellExtension '!insertmacro Krita_RegisterShellExtension_Macro'
 
@@ -221,5 +230,8 @@
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"
+	DeleteRegValue HKCR "Krita.OpenRaster" "PreviewDetails"
+	DeleteRegValue HKCR "Krita.OpenRaster" "InfoTip"
+	DeleteRegValue HKCR "Krita.OpenRaster" "FullDetails"
 !macroend
 !define Krita_UnregisterShellExtension '!insertmacro Krita_UnregisterShellExtension_Macro'

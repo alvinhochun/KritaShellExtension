@@ -23,60 +23,71 @@
 
 #pragma once
 
-#include <windows.h>
-#include <propsys.h>
+#include <zip.h>
 
 #include <memory>
 
 namespace kritashellex
 {
 
-class Document;
+class zip_deleter
+{
+public:
+	void operator()(zip_source_t *p) const {
+		zip_source_close(p);
+	}
 
-class KritaPropertyHandler :
-	public IPropertyStore,
-	public IInitializeWithStream
+	void operator()(zip_t *p) const {
+		zip_close(p);
+	}
+
+	void operator()(zip_file_t *p) const {
+		zip_fclose(p);
+	}
+};
+
+template<class T>
+using zip_ptr = std::unique_ptr<T, zip_deleter>;
+
+class Document
 {
 private:
-	struct kritafileprops
-	{
-		unsigned int width;
-		unsigned int height;
-		double xRes;
-		double yRes;
-	};
-
-	unsigned long m_refCount;
-	IStream *m_pStream;
-	std::unique_ptr<Document> m_pDocument;
-	IPropertyStoreCache *m_pCache;
+	const zip_ptr<zip_t> m_zf;
+	enum { FILETYPE_UNKNOWN, FILETYPE_KRA, FILETYPE_ORA } m_fileType;
+	unsigned int m_width;
+	unsigned int m_height;
+	double m_xRes;
+	double m_yRes;
+	bool m_init;
 
 public:
-	KritaPropertyHandler();
+	Document(zip_ptr<zip_t> zf);
+	~Document();
 
-	// Implements IUnknown
+	bool Init();
 
-	IFACEMETHODIMP QueryInterface(REFIID riid, void **ppv) override;
-	IFACEMETHODIMP_(ULONG) AddRef() override;
-	IFACEMETHODIMP_(ULONG) Release() override;
+	unsigned int getWidth() const {
+		return m_width;
+	}
 
-	// Implements IInitializeWithStream
+	unsigned int getHeight() const {
+		return m_height;
+	}
 
-	IFACEMETHODIMP Initialize(IStream *pStream, DWORD grfMode) override;
+	double getXRes() const {
+		return m_xRes;
+	}
 
-	// Implements IPropertyStore
-
-    IFACEMETHODIMP GetCount(DWORD *pcProps) override;
-	IFACEMETHODIMP GetAt(DWORD iProp, PROPERTYKEY *pkey) override;
-	IFACEMETHODIMP GetValue(REFPROPERTYKEY key, PROPVARIANT *pPropVar) override;
-	IFACEMETHODIMP SetValue(REFPROPERTYKEY key, REFPROPVARIANT propVar) override;
-	IFACEMETHODIMP Commit() override;
+	double getYRes() const {
+		return m_yRes;
+	}
 
 protected:
-	~KritaPropertyHandler();
+	bool readFile(const char *const filename, std::unique_ptr<char[]> &pContent_out, size_t &size_out) const;
 
 private:
-	HRESULT loadProperties();
+	bool parseKraMaindocXml(std::unique_ptr<char[]> pMaindoc, size_t maindocSize);
+	bool parseOraStackXml(std::unique_ptr<char[]> pStackXml, size_t stackXmlSize);
 };
 
 } // namespace kritashellex

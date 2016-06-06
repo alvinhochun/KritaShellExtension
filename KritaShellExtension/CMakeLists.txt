@@ -32,6 +32,7 @@ add_definitions(
 set(KRITASHELLEX_SRCS
 	ClassFactory.cpp
 	dllmain.cpp
+	document.cpp
 	KritaPropertyHandler.cpp
 	KritaThumbnailProvider.cpp
 	zip_source_IStream.cpp
@@ -42,6 +43,7 @@ set(KRITASHELLEX_SRCS
 set(KRITASHELLEX_HEADERS
 	ClassFactory.h
 	dllmain.h
+	document.h
 	KritaPropertyHandler.h
 	KritaThumbnailProvider.h
 	zip_source_IStream.h

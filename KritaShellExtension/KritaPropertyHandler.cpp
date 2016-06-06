@@ -24,6 +24,7 @@
 #include "dllmain.h"
 #include "KritaPropertyHandler.h"
 #include "zip_source_IStream.h"
+#include "document.h"
 
 #include <zip.h>
 #include <tinyxml2.h>
@@ -40,33 +41,10 @@
 
 using namespace kritashellex;
 
-namespace
-{
-
-class zip_deleter
-{
-public:
-	void operator()(zip_source_t *p) const {
-		zip_source_close(p);
-	}
-
-	void operator()(zip_t *p) const {
-		zip_close(p);
-	}
-
-	void operator()(zip_file_t *p) const {
-		zip_fclose(p);
-	}
-};
-
-template<class T>
-using zip_ptr = std::unique_ptr<T, zip_deleter>;
-
-} // namespace
-
 KritaPropertyHandler::KritaPropertyHandler() :
 	m_refCount(1),
 	m_pStream(nullptr),
+	m_pDocument(nullptr),
 	m_pCache(nullptr)
 {
 	IncDllRef();
@@ -123,16 +101,23 @@ IFACEMETHODIMP KritaPropertyHandler::Initialize(IStream *pStream_, DWORD grfMode
 		return hr;
 	}
 
-	// TODO: Create XML object?
+	// TODO: Handle errors from libzip?
 
-	std::unique_ptr<char[]> pMaindocContent;
-	unsigned long maindocLength;
-	hr = getMaindocFromArchive(m_pStream, pMaindocContent, maindocLength);
-	if (FAILED(hr)) {
-		return hr;
+	zip_ptr<zip_source_t> src(zip_source_IStream_create(m_pStream, nullptr));
+	if (!src) {
+		return E_NOTIMPL;
 	}
+	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, nullptr));
+	if (!zf) {
+		return E_NOTIMPL;
+	}
+	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf)));
+	if (!pDocument->Init()) {
+		return E_NOTIMPL;
+	}
+	m_pDocument = std::move(pDocument);
 
-	hr = parseMaindocXml(std::move(pMaindocContent), maindocLength, m_pCache);
+	hr = loadProperties();
 	if (FAILED(hr)) {
 		return hr;
 	}
@@ -201,106 +186,14 @@ IFACEMETHODIMP KritaPropertyHandler::Commit()
 	return STG_E_INVALIDPARAMETER;
 }
 
-HRESULT KritaPropertyHandler::getMaindocFromArchive(IStream *pStream, std::unique_ptr<char[]> &pMaindocContent_out, unsigned long &len_out)
+HRESULT KritaPropertyHandler::loadProperties()
 {
-	// TODO: Handle errors from libzip?
-
-	zip_ptr<zip_source_t> src(zip_source_IStream_create(pStream, nullptr));
-	if (!src) {
-		return E_NOTIMPL;
-	}
-	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, nullptr));
-	if (!zf) {
-		return E_NOTIMPL;
-	}
-
-	const char *szImageFileName = "maindoc.xml";
-	zip_stat_t fstat;
-	if (zip_stat(zf.get(), szImageFileName, ZIP_FL_UNCHANGED, &fstat) != 0) {
-		return E_NOTIMPL;
-	}
-
-	zip_ptr<zip_file_t> file(zip_fopen(zf.get(), szImageFileName, ZIP_FL_UNCHANGED));
-	if (!file) {
-		return E_NOTIMPL;
-	}
-
-	unsigned long long imageSize64 = fstat.size;
-	unsigned long imageSize = static_cast<unsigned long>(imageSize64);
-	if (imageSize != imageSize64) {
-		return E_NOTIMPL;
-	}
-
-	std::unique_ptr<char[]> pMaindocContent(new (std::nothrow) char[imageSize]);
-	if (!pMaindocContent) {
-		return E_OUTOFMEMORY;
-	}
-
-	int read = static_cast<int>(zip_fread(file.get(), pMaindocContent.get(), imageSize));
-	if (read != imageSize) {
-		return E_NOTIMPL;
-	}
-
-	pMaindocContent_out = std::move(pMaindocContent);
-	len_out = imageSize;
-
-	return S_OK;
-}
-
-HRESULT KritaPropertyHandler::parseMaindocXml(std::unique_ptr<char[]> &&pMaindoc, unsigned long len, IPropertyStoreCache *pCache)
-{
-	tinyxml2::XMLDocument xmlDoc;
-	tinyxml2::XMLError err;
-	// tinyxml2 doesn't use std::nothrow in XMLDocument::Parse, so we'd catch the exception.
-	try {
-		err = xmlDoc.Parse(pMaindoc.get(), len);
-	}
-	catch (std::bad_alloc) {
-		return E_OUTOFMEMORY;
-	}
-	if (err != tinyxml2::XML_NO_ERROR) {
-		return E_NOTIMPL;
-	}
-
-	// XMLDocument::Parse copies to an internal buffer so we can free the buffer already.
-	pMaindoc.reset(nullptr);
-
-	const tinyxml2::XMLElement *elemDoc = xmlDoc.FirstChildElement("DOC");
-	if (!elemDoc) {
-		return E_NOTIMPL;
-	}
-
-	const tinyxml2::XMLElement *elemImage = elemDoc->FirstChildElement("IMAGE");
-	if (!elemImage) {
-		return E_NOTIMPL;
-	}
-
-	kritafileprops props;
-
-	err = elemImage->QueryUnsignedAttribute("width", &props.width);
-	if (err != tinyxml2::XML_NO_ERROR) {
-		return E_NOTIMPL;
-	}
-
-	err = elemImage->QueryUnsignedAttribute("height", &props.height);
-	if (err != tinyxml2::XML_NO_ERROR) {
-		return E_NOTIMPL;
-	}
-
-	err = elemImage->QueryDoubleAttribute("x-res", &props.xRes);
-	if (err != tinyxml2::XML_NO_ERROR) {
-		return E_NOTIMPL;
-	}
-
-	err = elemImage->QueryDoubleAttribute("y-res", &props.yRes);
-	if (err != tinyxml2::XML_NO_ERROR) {
-		return E_NOTIMPL;
-	}
+	// TODO: Handle uninitialized properties properly
 
 	static_assert(UINT_MAX <= 9999999999, "unsigned int is somehow no longer 10-char max");
 	WCHAR wszDimensions[24]; // 2x 10-char-max int, 3x char, 1x null
 
-	HRESULT hr = StringCbPrintfW(wszDimensions, sizeof(wszDimensions), L"%u x %u", props.width, props.height);
+	HRESULT hr = StringCbPrintfW(wszDimensions, sizeof(wszDimensions), L"%u x %u", m_pDocument->getWidth(), m_pDocument->getHeight());
 	if (FAILED(hr)) {
 		return hr;
 	}
@@ -313,30 +206,30 @@ HRESULT KritaPropertyHandler::parseMaindocXml(std::unique_ptr<char[]> &&pMaindoc
 	}
 	PROPVARIANT propHSize;
 	PropVariantInit(&propHSize);
-	hr = InitPropVariantFromUInt32(props.width, &propHSize);
+	hr = InitPropVariantFromUInt32(m_pDocument->getWidth(), &propHSize);
 	if (FAILED(hr)) {
 		return hr;
 	}
 	PROPVARIANT propVSize;
 	PropVariantInit(&propVSize);
-	hr = InitPropVariantFromUInt32(props.height, &propVSize);
+	hr = InitPropVariantFromUInt32(m_pDocument->getHeight(), &propVSize);
 	if (FAILED(hr)) {
 		return hr;
 	}
 	PROPVARIANT propHRes;
 	PropVariantInit(&propHRes);
-	hr = InitPropVariantFromDouble(props.xRes, &propHRes);
+	hr = InitPropVariantFromDouble(m_pDocument->getXRes(), &propHRes);
 	if (FAILED(hr)) {
 		return hr;
 	}
 	PROPVARIANT propVRes;
 	PropVariantInit(&propVRes);
-	hr = InitPropVariantFromDouble(props.yRes, &propVRes);
+	hr = InitPropVariantFromDouble(m_pDocument->getYRes(), &propVRes);
 	if (FAILED(hr)) {
 		return hr;
 	}
 
-	hr = pCache->SetValueAndState(PKEY_Image_Dimensions, &propDimensions, PSC_NORMAL);
+	hr = m_pCache->SetValueAndState(PKEY_Image_Dimensions, &propDimensions, PSC_NORMAL);
 	if (FAILED(hr)) {
 		PropVariantClear(&propDimensions);
 		PropVariantClear(&propHSize);
@@ -345,7 +238,7 @@ HRESULT KritaPropertyHandler::parseMaindocXml(std::unique_ptr<char[]> &&pMaindoc
 		PropVariantClear(&propVRes);
 		return hr;
 	}
-	hr = pCache->SetValueAndState(PKEY_Image_HorizontalSize, &propHSize, PSC_NORMAL);
+	hr = m_pCache->SetValueAndState(PKEY_Image_HorizontalSize, &propHSize, PSC_NORMAL);
 	if (FAILED(hr)) {
 		PropVariantClear(&propHSize);
 		PropVariantClear(&propVSize);
@@ -353,20 +246,20 @@ HRESULT KritaPropertyHandler::parseMaindocXml(std::unique_ptr<char[]> &&pMaindoc
 		PropVariantClear(&propVRes);
 		return hr;
 	}
-	hr = pCache->SetValueAndState(PKEY_Image_VerticalSize, &propVSize, PSC_NORMAL);
+	hr = m_pCache->SetValueAndState(PKEY_Image_VerticalSize, &propVSize, PSC_NORMAL);
 	if (FAILED(hr)) {
 		PropVariantClear(&propVSize);
 		PropVariantClear(&propHRes);
 		PropVariantClear(&propVRes);
 		return hr;
 	}
-	hr = pCache->SetValueAndState(PKEY_Image_HorizontalResolution, &propHRes, PSC_NORMAL);
+	hr = m_pCache->SetValueAndState(PKEY_Image_HorizontalResolution, &propHRes, PSC_NORMAL);
 	if (FAILED(hr)) {
 		PropVariantClear(&propHRes);
 		PropVariantClear(&propVRes);
 		return hr;
 	}
-	hr = pCache->SetValueAndState(PKEY_Image_VerticalResolution, &propVRes, PSC_NORMAL);
+	hr = m_pCache->SetValueAndState(PKEY_Image_VerticalResolution, &propVRes, PSC_NORMAL);
 	if (FAILED(hr)) {
 		PropVariantClear(&propVRes);
 		return hr;
