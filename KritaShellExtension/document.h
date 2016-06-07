@@ -86,6 +86,8 @@ public:
 
 protected:
 	bool readFile(const char *const filename, std::unique_ptr<char[]> &pContent_out, size_t &size_out) const;
+	bool getFileSize(const char *const filename, size_t &size_out) const;
+	bool getFileContent(const char *const filename, char *pContent, size_t size) const;
 
 private:
 	bool parseKraMaindocXml(std::unique_ptr<char[]> pMaindoc, size_t maindocSize);
