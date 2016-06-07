@@ -61,6 +61,8 @@ private:
 	double m_yRes;
 	bool m_init;
 
+	friend class KritaThumbnailProvider;
+
 public:
 	Document(zip_ptr<zip_t> zf, zip_ptr<zip_source_t> zsrc);
 	Document(zip_ptr<zip_t> zf);

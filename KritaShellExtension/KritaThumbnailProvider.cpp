@@ -24,6 +24,7 @@
 #include "dllmain.h"
 #include "KritaThumbnailProvider.h"
 #include "zip_source_IStream.h"
+#include "document.h"
 
 #include <zip.h>
 
@@ -37,30 +38,6 @@
 #pragma comment(lib, "shlwapi.lib")
 
 using namespace kritashellex;
-
-namespace
-{
-
-class zip_deleter
-{
-public:
-	void operator()(zip_source_t *p) const {
-		zip_source_close(p);
-	}
-
-	void operator()(zip_t *p) const {
-		zip_close(p);
-	}
-
-	void operator()(zip_file_t *p) const {
-		zip_fclose(p);
-	}
-};
-
-template<class T>
-using zip_ptr = std::unique_ptr<T, zip_deleter>;
-
-} // namespace
 
 KritaThumbnailProvider::KritaThumbnailProvider() :
 	m_refCount(1),
@@ -106,7 +83,27 @@ IFACEMETHODIMP KritaThumbnailProvider::Initialize(IStream *pStream, DWORD grfMod
 	if (m_pStream) {
 		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
 	}
-	return pStream->QueryInterface(&m_pStream);
+
+	HRESULT hr = pStream->QueryInterface(&m_pStream);
+	if (FAILED(hr)) {
+		return hr;
+	}
+
+	// TODO: Handle errors from libzip?
+
+	zip_ptr<zip_source_t> src(zip_source_IStream_create(pStream, nullptr));
+	if (!src) {
+		return E_NOTIMPL;
+	}
+	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, nullptr));
+	if (!zf) {
+		return E_NOTIMPL;
+	}
+	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf), std::move(src)));
+	if (!pDocument->Init()) {
+		return E_NOTIMPL;
+	}
+	m_pDocument = std::move(pDocument);
 }
 
 IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
@@ -120,12 +117,12 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	*phbmp = nullptr;
 	*pdwAlpha = WTSAT_ARGB;
 
-	if (!m_pStream) {
+	if (!m_pDocument) {
 		return E_UNEXPECTED;
 	}
 
 	HGLOBAL hImageContent;
-	hr = getThumbnailPngFromArchive(m_pStream, cx, hImageContent);
+	hr = getThumbnailPngFromArchive(cx, hImageContent);
 	if (FAILED(hr)) {
 		return hr;
 	}
@@ -148,37 +145,26 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	return E_FAIL;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(IStream *pStream, UINT cx, HGLOBAL &hImageContent_out)
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out)
 {
-	// TODO: Handle errors from libzip?
-
-	zip_ptr<zip_source_t> src(zip_source_IStream_create(pStream, nullptr));
-	if (!src) {
-		return E_NOTIMPL;
-	}
-	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, nullptr));
-	if (!zf) {
-		return E_NOTIMPL;
-	}
-
 	const char *szImageFileName = nullptr;
 	if (cx > 256) {
 		szImageFileName = "mergedimage.png";
 	}
 
-	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
 		// Try preview.png for .kra files
 		szImageFileName = "preview.png";
-		if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+		if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
 			// Try Thumbnails/thumbnail.png for .ora files
 			szImageFileName = "Thumbnails/thumbnail.png";
-			if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+			if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
 				if (cx > 256) {
 					return E_NOTIMPL;
 				} else {
 					// Try mergedimage.png if thumbnail can't be used
 					szImageFileName = "mergedimage.png";
-					if (FAILED(getThumbnailPngFromArchiveByName(zf.get(), cx, szImageFileName, hImageContent_out))) {
+					if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
 						return E_NOTIMPL;
 					}
 				}
@@ -189,21 +175,10 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(IStream *pStream, UIN
 	return S_OK;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(zip_t *const zf, UINT cx, const char *const filename, HGLOBAL &hImageContent_out)
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out)
 {
-	zip_stat_t fstat;
-	if (zip_stat(zf, filename, ZIP_FL_UNCHANGED, &fstat) != 0) {
-		return E_NOTIMPL;
-	}
-
-	zip_ptr<zip_file_t> file(zip_fopen(zf, filename, ZIP_FL_UNCHANGED));
-	if (!file) {
-		return E_NOTIMPL;
-	}
-
-	unsigned long long imageSize64 = fstat.size;
-	unsigned long imageSize = static_cast<unsigned long>(imageSize64);
-	if (imageSize != imageSize64) {
+	size_t imageSize;
+	if (!m_pDocument->getFileSize(filename, imageSize)) {
 		return E_NOTIMPL;
 	}
 
@@ -217,8 +192,7 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(zip_t *const zf
 		return HRESULT_FROM_WIN32(GetLastError());
 	}
 
-	int read = static_cast<int>(zip_fread(file.get(), pImageContent, imageSize));
-	if (read != imageSize) {
+	if (!m_pDocument->getFileContent(filename, static_cast<char *>(pImageContent), imageSize)) {
 		GlobalUnlock(hImageContent_out);
 		GlobalFree(hImageContent_out);
 		return E_NOTIMPL;

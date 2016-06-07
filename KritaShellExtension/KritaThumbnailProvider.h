@@ -33,6 +33,8 @@
 namespace kritashellex
 {
 
+class Document;
+
 class KritaThumbnailProvider :
 	public IThumbnailProvider,
 	public IInitializeWithStream
@@ -40,6 +42,7 @@ class KritaThumbnailProvider :
 private:
 	unsigned long m_refCount;
 	IStream *m_pStream;
+	std::unique_ptr<Document> m_pDocument;
 
 public:
 	KritaThumbnailProvider();
@@ -62,8 +65,8 @@ protected:
 	~KritaThumbnailProvider();
 
 private:
-	static HRESULT getThumbnailPngFromArchive(IStream *pStream, UINT cx, HGLOBAL &hImageContent_out);
-	static HRESULT getThumbnailPngFromArchiveByName(zip_t *const zf, UINT cx, const char *const filename, HGLOBAL &hImageContent_out);
+	HRESULT getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out);
+	HRESULT getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out);
 	static HRESULT getThumbnailFromPngStream(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 	static HRESULT getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 };
