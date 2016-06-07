@@ -29,7 +29,20 @@
 
 using namespace kritashellex;
 
+Document::Document(zip_ptr<zip_t> zf, zip_ptr<zip_source_t> zsrc) :
+	m_zsrc(std::move(zsrc)),
+	m_zf(std::move(zf)),
+	m_fileType(FILETYPE_UNKNOWN),
+	m_width(0),
+	m_height(0),
+	m_xRes(0),
+	m_yRes(0),
+	m_init(false)
+{
+}
+
 Document::Document(zip_ptr<zip_t> zf) :
+	m_zsrc(nullptr),
 	m_zf(std::move(zf)),
 	m_fileType(FILETYPE_UNKNOWN),
 	m_width(0),

@@ -27,7 +27,6 @@
 #include "document.h"
 
 #include <zip.h>
-#include <tinyxml2.h>
 
 #include <memory>
 #include <new>
@@ -111,7 +110,7 @@ IFACEMETHODIMP KritaPropertyHandler::Initialize(IStream *pStream_, DWORD grfMode
 	if (!zf) {
 		return E_NOTIMPL;
 	}
-	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf)));
+	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf), std::move(src)));
 	if (!pDocument->Init()) {
 		return E_NOTIMPL;
 	}
