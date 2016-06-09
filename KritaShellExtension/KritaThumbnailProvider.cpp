@@ -104,6 +104,8 @@ IFACEMETHODIMP KritaThumbnailProvider::Initialize(IStream *pStream, DWORD grfMod
 		return E_NOTIMPL;
 	}
 	m_pDocument = std::move(pDocument);
+
+	return S_OK;
 }
 
 IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha)
