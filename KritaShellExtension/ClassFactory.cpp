@@ -51,7 +51,10 @@ IFACEMETHODIMP ClassFactory::QueryInterface(REFIID riid, void **ppv)
 	static const QITAB qit[] = {
 		QITABENT(ClassFactory, IClassFactory),
 		{ nullptr },
+#pragma warning(push)
+#pragma warning(disable: 4838)
 	};
+#pragma warning(pop)
 	return QISearch(this, qit, riid, ppv);
 }
 

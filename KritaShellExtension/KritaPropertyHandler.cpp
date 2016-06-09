@@ -60,7 +60,10 @@ IFACEMETHODIMP KritaPropertyHandler::QueryInterface(REFIID riid, void **ppv)
 		QITABENT(KritaPropertyHandler, IPropertyStore),
 		QITABENT(KritaPropertyHandler, IInitializeWithStream),
 		{ nullptr },
+#pragma warning(push)
+#pragma warning(disable: 4838)
 	};
+#pragma warning(pop)
 	return QISearch(this, qit, riid, ppv);
 }
 

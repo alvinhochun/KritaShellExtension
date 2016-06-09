@@ -57,7 +57,10 @@ IFACEMETHODIMP KritaThumbnailProvider::QueryInterface(REFIID riid, void **ppv)
 		QITABENT(KritaThumbnailProvider, IThumbnailProvider),
 		QITABENT(KritaThumbnailProvider, IInitializeWithStream),
 		{ nullptr },
+#pragma warning(push)
+#pragma warning(disable: 4838)
 	};
+#pragma warning(pop)
 	return QISearch(this, qit, riid, ppv);
 }
 
