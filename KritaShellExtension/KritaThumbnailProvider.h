@@ -71,7 +71,7 @@ protected:
 
 private:
 	HRESULT getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out) const;
-	HRESULT getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out) const;
+	HRESULT getThumbnailPngFromArchiveByName(const char *const filename, HGLOBAL &hImageContent_out) const;
 	static HRESULT getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out);
 	static HRESULT getBitmapFromPngStreamGdiplus(IStream *pStream, std::unique_ptr<Gdiplus::Bitmap> &pImageBitmap_out);
 	static HRESULT getThumbnailFromBitmap(UINT cx, Gdiplus::Bitmap *pImageBitmap, HBITMAP &hbmp_out);

@@ -168,19 +168,19 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hIm
 		szImageFileName = "mergedimage.png";
 	}
 
-	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
+	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
 		// Try preview.png for .kra files
 		szImageFileName = "preview.png";
-		if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
+		if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
 			// Try Thumbnails/thumbnail.png for .ora files
 			szImageFileName = "Thumbnails/thumbnail.png";
-			if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
+			if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
 				if (cx > 256) {
 					return E_NOTIMPL;
 				} else {
 					// Try mergedimage.png if thumbnail can't be used
 					szImageFileName = "mergedimage.png";
-					if (FAILED(getThumbnailPngFromArchiveByName(cx, szImageFileName, hImageContent_out))) {
+					if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
 						return E_NOTIMPL;
 					}
 				}
@@ -191,7 +191,7 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hIm
 	return S_OK;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out) const
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(const char *const filename, HGLOBAL &hImageContent_out) const
 {
 	size_t imageSize;
 	if (!m_pDocument->getFileSize(filename, imageSize)) {
