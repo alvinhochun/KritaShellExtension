@@ -145,7 +145,7 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	return E_FAIL;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out)
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out) const
 {
 	const char *szImageFileName = nullptr;
 	if (cx > 256) {
@@ -175,7 +175,7 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hIm
 	return S_OK;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out)
+HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(UINT cx, const char *const filename, HGLOBAL &hImageContent_out) const
 {
 	size_t imageSize;
 	if (!m_pDocument->getFileSize(filename, imageSize)) {
@@ -223,12 +223,34 @@ HRESULT KritaThumbnailProvider::getThumbnailFromPngStream(UINT cx, IStream *pStr
 
 HRESULT KritaThumbnailProvider::getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out)
 {
+	std::unique_ptr<Gdiplus::Bitmap> pImageBitmap;
+	HRESULT hr = getBitmapFromPngStreamGdiplus(pStream, pImageBitmap);
+	if (FAILED(hr)) {
+		return hr;
+	}
+
+	hr = getThumbnailFromBitmap(cx, pImageBitmap.get(), hbmp_out);
+
+	if (FAILED(hr)) {
+		return hr;
+	}
+	return S_OK;
+}
+
+HRESULT KritaThumbnailProvider::getBitmapFromPngStreamGdiplus(IStream *pStream, std::unique_ptr<Gdiplus::Bitmap> &pImageBitmap_out)
+{
 	std::unique_ptr<Gdiplus::Bitmap> pImageBitmap(new Gdiplus::Bitmap(pStream));
 	pStream->Release();
 	if (pImageBitmap->GetLastStatus() != Gdiplus::Ok) {
 		return E_FAIL;
 	}
+	pImageBitmap_out = std::move(pImageBitmap);
 
+	return S_OK;
+}
+
+HRESULT KritaThumbnailProvider::getThumbnailFromBitmap(UINT cx, Gdiplus::Bitmap *pImageBitmap, HBITMAP &hbmp_out)
+{
 	unsigned long imageHeight = pImageBitmap->GetHeight();
 	unsigned long imageWidth = pImageBitmap->GetWidth();
 	unsigned long dstHeight, dstWidth;
@@ -253,7 +275,7 @@ HRESULT KritaThumbnailProvider::getThumbnailFromPngStreamGdiplus(UINT cx, IStrea
 	}
 	{
 		Gdiplus::Graphics g(pDstBitmap.get());
-		g.DrawImage(pImageBitmap.get(), 0, 0, dstWidth, dstHeight);
+		g.DrawImage(pImageBitmap, 0, 0, dstWidth, dstHeight);
 	}
 	pDstBitmap->GetHBITMAP(Gdiplus::Color::Transparent, &hbmp_out);
 
