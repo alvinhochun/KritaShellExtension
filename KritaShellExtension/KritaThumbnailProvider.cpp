@@ -126,9 +126,16 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 		return E_UNEXPECTED;
 	}
 
+	ULONG_PTR token;
+	Gdiplus::GdiplusStartupInput input;
+	if (Gdiplus::GdiplusStartup(&token, &input, nullptr) != Gdiplus::Ok) {
+		return E_FAIL;
+	}
+
 	HGLOBAL hImageContent;
 	hr = getThumbnailPngFromArchive(cx, hImageContent);
 	if (FAILED(hr)) {
+		Gdiplus::GdiplusShutdown(token);
 		return hr;
 	}
 
@@ -136,14 +143,8 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	hr = CreateStreamOnHGlobal(hImageContent, TRUE, &pStream);
 	if (FAILED(hr)) {
 		GlobalFree(hImageContent);
+		Gdiplus::GdiplusShutdown(token);
 		return hr;
-	}
-
-	ULONG_PTR token;
-	Gdiplus::GdiplusStartupInput input;
-	if (Gdiplus::GdiplusStartup(&token, &input, nullptr) != Gdiplus::Ok) {
-		pStream->Release();
-		return E_FAIL;
 	}
 
 	hr = getThumbnailFromPngStreamGdiplus(cx, pStream, *phbmp);
