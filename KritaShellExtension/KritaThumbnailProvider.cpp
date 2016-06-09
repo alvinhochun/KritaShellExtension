@@ -132,22 +132,16 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 		return E_FAIL;
 	}
 
-	HGLOBAL hImageContent;
-	hr = getThumbnailPngFromArchive(cx, hImageContent);
-	if (FAILED(hr)) {
-		Gdiplus::GdiplusShutdown(token);
-		return hr;
-	}
+	{
+		std::unique_ptr<Gdiplus::Bitmap> pImageBitmap;
+		hr = getBitmapFromArchiveForThumbnail(cx, pImageBitmap);
+		if (FAILED(hr)) {
+			Gdiplus::GdiplusShutdown(token);
+			return hr;
+		}
 
-	IStream *pStream;
-	hr = CreateStreamOnHGlobal(hImageContent, TRUE, &pStream);
-	if (FAILED(hr)) {
-		GlobalFree(hImageContent);
-		Gdiplus::GdiplusShutdown(token);
-		return hr;
+		hr = getThumbnailFromBitmap(cx, pImageBitmap.get(), *phbmp);
 	}
-
-	hr = getThumbnailFromPngStreamGdiplus(cx, pStream, *phbmp);
 
 	Gdiplus::GdiplusShutdown(token);
 
@@ -161,32 +155,64 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 	return E_FAIL;
 }
 
-HRESULT KritaThumbnailProvider::getThumbnailPngFromArchive(UINT cx, HGLOBAL &hImageContent_out) const
+HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::unique_ptr<Gdiplus::Bitmap> &pImageBitmap_out) const
 {
-	const char *szImageFileName = nullptr;
-	if (cx > 256) {
-		szImageFileName = "mergedimage.png";
-	}
+	HRESULT hr;
 
-	if (!szImageFileName || FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
-		// Try preview.png for .kra files
-		szImageFileName = "preview.png";
-		if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
-			// Try Thumbnails/thumbnail.png for .ora files
-			szImageFileName = "Thumbnails/thumbnail.png";
-			if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
-				if (cx > 256) {
-					return E_NOTIMPL;
-				} else {
-					// Try mergedimage.png if thumbnail can't be used
-					szImageFileName = "mergedimage.png";
-					if (FAILED(getThumbnailPngFromArchiveByName(szImageFileName, hImageContent_out))) {
-						return E_NOTIMPL;
-					}
-				}
-			}
+	if (cx > 256) {
+		hr = getBitmapFromArchiveByName("mergedimage.png", pImageBitmap_out);
+		if (SUCCEEDED(hr)) {
+			return S_OK;
 		}
 	}
+
+	switch (m_pDocument->getFileType()) {
+	case Document::FILETYPE_KRA:
+		hr = getBitmapFromArchiveByName("preview.png", pImageBitmap_out); 
+		break;
+	case Document::FILETYPE_ORA:
+		hr = getBitmapFromArchiveByName("Thumbnails/thumbnail.png", pImageBitmap_out); 
+		break;
+	default:
+		hr = E_NOTIMPL;
+	}
+
+	if (SUCCEEDED(hr)) {
+		return S_OK;
+	}
+
+	// Try mergedimage.png if thumbnail can't be used
+	hr = getBitmapFromArchiveByName("mergedimage.png", pImageBitmap_out);
+	if (SUCCEEDED(hr)) {
+		return S_OK;
+	}
+
+	return hr;
+}
+
+HRESULT KritaThumbnailProvider::getBitmapFromArchiveByName(const char *const filename, std::unique_ptr<Gdiplus::Bitmap> &pImageBitmap_out) const
+{
+	HRESULT hr;
+
+	HGLOBAL hImageContent;
+	hr = getThumbnailPngFromArchiveByName(filename, hImageContent);
+	if (FAILED(hr)) {
+		return hr;
+	}
+
+	IStream *pStream;
+	hr = CreateStreamOnHGlobal(hImageContent, TRUE, &pStream);
+	if (FAILED(hr)) {
+		GlobalFree(hImageContent);
+		return hr;
+	}
+
+	std::unique_ptr<Gdiplus::Bitmap> pImageBitmap;
+	hr = getBitmapFromPngStreamGdiplus(pStream, pImageBitmap);
+	if (FAILED(hr)) {
+		return hr;
+	}
+	pImageBitmap_out = std::move(pImageBitmap);
 
 	return S_OK;
 }
@@ -215,22 +241,6 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(const char *con
 	}
 
 	GlobalUnlock(hImageContent_out);
-	return S_OK;
-}
-
-HRESULT KritaThumbnailProvider::getThumbnailFromPngStreamGdiplus(UINT cx, IStream *pStream, HBITMAP &hbmp_out)
-{
-	std::unique_ptr<Gdiplus::Bitmap> pImageBitmap;
-	HRESULT hr = getBitmapFromPngStreamGdiplus(pStream, pImageBitmap);
-	if (FAILED(hr)) {
-		return hr;
-	}
-
-	hr = getThumbnailFromBitmap(cx, pImageBitmap.get(), hbmp_out);
-
-	if (FAILED(hr)) {
-		return hr;
-	}
 	return S_OK;
 }
 

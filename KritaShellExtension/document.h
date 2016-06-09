@@ -51,10 +51,13 @@ using zip_ptr = std::unique_ptr<T, zip_deleter>;
 
 class Document
 {
+public:
+	enum filetype { FILETYPE_UNKNOWN, FILETYPE_KRA, FILETYPE_ORA };
+
 private:
 	const zip_ptr<zip_source_t> m_zsrc;
 	const zip_ptr<zip_t> m_zf;
-	enum { FILETYPE_UNKNOWN, FILETYPE_KRA, FILETYPE_ORA } m_fileType;
+	filetype m_fileType;
 	unsigned int m_width;
 	unsigned int m_height;
 	double m_xRes;
@@ -69,6 +72,10 @@ public:
 	~Document();
 
 	bool Init();
+
+	filetype getFileType() const {
+		return m_fileType;
+	}
 
 	unsigned int getWidth() const {
 		return m_width;
