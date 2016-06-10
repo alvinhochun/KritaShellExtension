@@ -64,8 +64,6 @@ private:
 	double m_yRes;
 	bool m_init;
 
-	friend class KritaThumbnailProvider;
-
 public:
 	Document(zip_ptr<zip_t> zf, zip_ptr<zip_source_t> zsrc);
 	Document(zip_ptr<zip_t> zf);
@@ -93,7 +91,6 @@ public:
 		return m_yRes;
 	}
 
-protected:
 	bool readFile(const char *const filename, std::unique_ptr<char[]> &pContent_out, size_t &size_out) const;
 	bool getFileSize(const char *const filename, size_t &size_out) const;
 	bool getFileContent(const char *const filename, char *pContent, size_t size) const;
