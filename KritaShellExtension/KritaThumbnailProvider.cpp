@@ -131,11 +131,6 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 		return E_UNEXPECTED;
 	}
 
-	// HACK: Work around small previews being larger than actual image
-	if (cx <= 256 && (m_pDocument->getWidth() < 256 && m_pDocument->getHeight() < 256)) {
-		cx = std::min(std::max(m_pDocument->getWidth(), m_pDocument->getHeight()), cx);
-	}
-
 	ULONG_PTR token;
 	Gdiplus::GdiplusStartupInput input;
 	if (Gdiplus::GdiplusStartup(&token, &input, nullptr) != Gdiplus::Ok) {
@@ -169,9 +164,8 @@ HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::u
 {
 	HRESULT hr;
 
-	// Try mergedimage.png if requested size is larger than 256px,
-	// or if image is below 256px so it won't get all blurry
-	if (cx > 256 || (cx <= 256 && (m_pDocument->getWidth() < 256 && m_pDocument->getHeight() < 256))) {
+	// Try mergedimage.png if requested size is larger than 256px
+	if (cx > 256) {
 		hr = getBitmapFromArchiveByName("mergedimage.png", pImageBitmap_out);
 		if (SUCCEEDED(hr)) {
 			return S_OK;
@@ -196,22 +190,25 @@ HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::u
 		unsigned long imageWidth = m_pDocument->getWidth();
 		unsigned long thumbHeight = pImageBitmap_out->GetHeight();
 		unsigned long thumbWidth = pImageBitmap_out->GetWidth();
-		if (imageHeight == imageWidth) {
-			if (thumbWidth == 256 && thumbHeight == 256) {
-				return S_OK;
-			}
-		} else if (imageHeight > imageWidth) {
-			if (thumbHeight == 256) {
-				unsigned long scaledWidth = std::max(256 * imageWidth / imageHeight, 1ul);
-				if (thumbWidth <= scaledWidth + 1 && thumbWidth >= scaledWidth - 1) {
+		// Don't use small preview if it's larger than the image
+		if (thumbHeight <= imageHeight && thumbWidth <= imageWidth) {
+			if (imageHeight == imageWidth) {
+				if (thumbWidth == 256 && thumbHeight == 256) {
 					return S_OK;
 				}
-			}
-		} else {
-			if (thumbWidth == 256) {
-				unsigned long scaledHeight = std::max(256 * imageHeight / imageWidth, 1ul);
-				if (thumbHeight <= scaledHeight + 1 && thumbHeight >= scaledHeight - 1) {
-					return S_OK;
+			} else if (imageHeight > imageWidth) {
+				if (thumbHeight == 256) {
+					unsigned long scaledWidth = std::max(256 * imageWidth / imageHeight, 1ul);
+					if (thumbWidth <= scaledWidth + 1 && thumbWidth >= scaledWidth - 1) {
+						return S_OK;
+					}
+				}
+			} else {
+				if (thumbWidth == 256) {
+					unsigned long scaledHeight = std::max(256 * imageHeight / imageWidth, 1ul);
+					if (thumbHeight <= scaledHeight + 1 && thumbHeight >= scaledHeight - 1) {
+						return S_OK;
+					}
 				}
 			}
 		}
