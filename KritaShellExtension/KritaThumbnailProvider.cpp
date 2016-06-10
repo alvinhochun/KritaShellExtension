@@ -190,7 +190,31 @@ HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::u
 	}
 
 	if (SUCCEEDED(hr)) {
-		return S_OK;
+		// Check thumbnail size and aspect ratio
+		// Give a +-1px tolerance when checking the scaled side
+		unsigned long imageHeight = m_pDocument->getHeight();
+		unsigned long imageWidth = m_pDocument->getWidth();
+		unsigned long thumbHeight = pImageBitmap_out->GetHeight();
+		unsigned long thumbWidth = pImageBitmap_out->GetWidth();
+		if (imageHeight == imageWidth) {
+			if (thumbWidth == 256 && thumbHeight == 256) {
+				return S_OK;
+			}
+		} else if (imageHeight > imageWidth) {
+			if (thumbHeight == 256) {
+				unsigned long scaledWidth = std::max(256 * imageWidth / imageHeight, 1ul);
+				if (thumbWidth <= scaledWidth + 1 && thumbWidth >= scaledWidth - 1) {
+					return S_OK;
+				}
+			}
+		} else {
+			if (thumbWidth == 256) {
+				unsigned long scaledHeight = std::max(256 * imageHeight / imageWidth, 1ul);
+				if (thumbHeight <= scaledHeight + 1 && thumbHeight >= scaledHeight - 1) {
+					return S_OK;
+				}
+			}
+		}
 	}
 
 	// Try mergedimage.png if thumbnail can't be used
