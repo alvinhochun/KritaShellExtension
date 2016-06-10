@@ -305,11 +305,11 @@ HRESULT KritaThumbnailProvider::getThumbnailFromBitmap(UINT cx, Gdiplus::Bitmap 
 		dstWidth = cx;
 		dstHeight = cx;
 	} else if (imageHeight > imageWidth) {
-		dstWidth = cx * imageWidth / imageHeight;
+		dstWidth = std::max(cx * imageWidth / imageHeight, 1ul);
 		dstHeight = cx;
 	} else {
 		dstWidth = cx;
-		dstHeight = cx * imageHeight / imageWidth;
+		dstHeight = std::max(cx * imageHeight / imageWidth, 1ul);
 	}
 
 	std::unique_ptr<Gdiplus::Bitmap> pDstBitmap(new Gdiplus::Bitmap(dstWidth, dstHeight, PixelFormat32bppARGB));
