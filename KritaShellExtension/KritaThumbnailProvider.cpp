@@ -28,11 +28,16 @@
 
 #include <zip.h>
 
+#include <algorithm>
 #include <memory>
 #include <new>
 
 #include <gdiplus.h>
 #include <shlwapi.h>
+
+// Kill the evilness
+#undef min
+#undef max
 
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "shlwapi.lib")
@@ -126,6 +131,11 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 		return E_UNEXPECTED;
 	}
 
+	// HACK: Work around small previews being larger than actual image
+	if (cx <= 256 && (m_pDocument->getWidth() < 256 && m_pDocument->getHeight() < 256)) {
+		cx = std::min(std::max(m_pDocument->getWidth(), m_pDocument->getHeight()), cx);
+	}
+
 	ULONG_PTR token;
 	Gdiplus::GdiplusStartupInput input;
 	if (Gdiplus::GdiplusStartup(&token, &input, nullptr) != Gdiplus::Ok) {
@@ -159,7 +169,9 @@ HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::u
 {
 	HRESULT hr;
 
-	if (cx > 256) {
+	// Try mergedimage.png if requested size is larger than 256px,
+	// or if image is below 256px so it won't get all blurry
+	if (cx > 256 || (cx <= 256 && (m_pDocument->getWidth() < 256 && m_pDocument->getHeight() < 256))) {
 		hr = getBitmapFromArchiveByName("mergedimage.png", pImageBitmap_out);
 		if (SUCCEEDED(hr)) {
 			return S_OK;
