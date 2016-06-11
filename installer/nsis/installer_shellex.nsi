@@ -66,6 +66,8 @@ Section "Remove_prev_version"
 	${If} ${FileExists} "$PrevInstallLocation\uninstall.exe"
 		ExecWait "$PrevInstallLocation\uninstall.exe /S _?=$PrevInstallLocation"
 		Delete "$PrevInstallLocation\uninstall.exe"
+		RMDir /REBOOTOK "$PrevInstallLocation"
+		SetRebootFlag false
 	${EndIf}
 SectionEnd
 
@@ -147,7 +149,15 @@ SectionEnd
 
 Section "un.Thing"
 	DeleteRegKey HKLM "Software\Krita\ShellExtension"
-	DeleteRegKey /ifempty HKLM "Software\Krita"
+	push $R0
+	# Delete only if no sub-values
+	ClearErrors
+	EnumRegValue $R0 HKLM "Software\Krita" 0
+	${If} ${Errors}
+	${OrIf} $R0 == ""
+		DeleteRegKey /ifempty HKLM "Software\Krita"
+	${EndIf}
+	pop $R0
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension"
 	Delete $INSTDIR\uninstall.exe
 	RMDir /REBOOTOK $INSTDIR

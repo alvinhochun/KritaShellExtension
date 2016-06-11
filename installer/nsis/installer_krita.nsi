@@ -130,12 +130,14 @@ Section "-Remove_shellex" SEC_remove_shellex
 		SetDetailsPrint listonly
 		ExecWait "$PrevShellExInstallLocation\uninstall.exe /S _?=$PrevShellExInstallLocation" $R0
 		${If} $R0 != 0
-			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita Shell Extension."
+			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita Shell Integration."
 			SetDetailsPrint both
 			DetailPrint "Failed to remove Krita Shell Integration."
 			Abort
 		${EndIf}
 		Delete "$PrevShellExInstallLocation\uninstall.exe"
+		RMDir /REBOOTOK "$PrevShellExInstallLocation"
+		SetRebootFlag false
 		SetDetailsPrint lastused
 		DetailPrint "Krita Shell Integration removed."
 		pop $R0
@@ -156,6 +158,8 @@ Section "Remove Old Version" SEC_remove_old_version
 			Abort
 		${EndIf}
 		Delete "$KritaNsisInstallLocation\uninstall.exe"
+		RMDir /REBOOTOK "$KritaNsisInstallLocation"
+		SetRebootFlag false
 		SetDetailsPrint lastused
 		DetailPrint "Previous version removed."
 		pop $R0
