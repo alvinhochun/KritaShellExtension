@@ -315,7 +315,9 @@ Function .onInit
 			# Shouldn't reach this??? We've already checked for Krita version
 			# Whatever we'll just pass
 		${EndIf}
-		StrCpy $InstDir $PrevInstallLocation
+		${If} $PrevInstallLocation != ""
+			StrCpy $InstDir $PrevInstallLocation
+		${EndIf}
 	${EndIf}
 
 	${If} $KritaExePath == ""
