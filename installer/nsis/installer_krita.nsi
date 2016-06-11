@@ -121,9 +121,12 @@ Var KritaNsisInstallLocation
 Var PrevShellExInstallLocation
 Var PrevShellExStandalone
 
+Var UninstallShellExStandalone
+
 Section "-Remove_shellex" SEC_remove_shellex
 	${If} $PrevShellExInstallLocation != ""
 	${AndIf} $PrevShellExStandalone == 1
+	${AndIf} $KritaNsisVersion == ""
 	${AndIf} ${FileExists} "$PrevShellExInstallLocation\uninstall.exe"
 		push $R0
 		DetailPrint "Removing Krita Shell Integration..."
@@ -278,19 +281,37 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "un.Shell Integration"
-	DeleteRegKey HKLM "Software\Krita"
+	${If} $UninstallShellExStandalone == 1
+		push $R0
+		DetailPrint "Removing Krita Shell Integration..."
+		SetDetailsPrint listonly
+		ExecWait "$INSTDIR\shellex\uninstall.exe /S _?=$INSTDIR\shellex" $R0
+		${If} $R0 != 0
+			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita Shell Integration. Please report this bug!"
+			SetDetailsPrint lastused
+			SetDetailsPrint both
+			DetailPrint "Failed to remove Krita Shell Integration."
+		${EndIf}
+		Delete "$INSTDIR\shellex\uninstall.exe"
+		RMDir /REBOOTOK "$INSTDIR\shellex"
+		SetDetailsPrint lastused
+		DetailPrint "Krita Shell Integration removed."
+		pop $R0
+	${Else}
+		${Krita_UnregisterShellExtension}
 
-	${Krita_UnregisterShellExtension}
-
-	${If} ${RunningX64}
-		${Krita_UnregisterComComonents} 64
+		${If} ${RunningX64}
+			${Krita_UnregisterComComonents} 64
+		${EndIf}
+		${Krita_UnregisterComComonents} 32
 	${EndIf}
-	${Krita_UnregisterComComonents} 32
 SectionEnd
 
 Section "un.Main_associate"
 	# TODO: Conditional, use install log
-	${Krita_UnregisterFileAssociation}
+	${If} $UninstallShellExStandalone != 1
+		${Krita_UnregisterFileAssociation}
+	${EndIf}
 SectionEnd
 
 Section "un.Main_Shortcuts"
@@ -464,7 +485,7 @@ Function .onInit
 	${EndIf}
 
 	# Detect standalone shell extension
-	# TODO: Allow Krita and the shell extension to be installed separately?
+	# TODO: Would it be possible to update Krita without replacing the standalone shellex?
 	ClearErrors
 	ReadRegStr $PrevShellExInstallLocation HKLM "Software\Krita\ShellExtension" "InstallLocation"
 	#ReadRegStr $PrevShellExVersion HKLM "Software\Krita\ShellExtension" "Version"
@@ -499,6 +520,7 @@ Function un.onInit
 		SetRegView 64
 	${Endif}
 !endif
+	ReadRegDWORD $UninstallShellExStandalone HKLM "Software\Krita\ShellExtension" "Standalone"
 FunctionEnd
 
 Function func_ShellExLicensePage_Init

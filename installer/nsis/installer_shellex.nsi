@@ -18,6 +18,7 @@ ShowUninstDetails show
 # Installer Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "license.rtf"
+!define MUI_PAGE_CUSTOMFUNCTION_PRE  func_InstallDirPage_Pre
 !insertmacro MUI_PAGE_DIRECTORY
 Page Custom func_KritaConfigPage_Show
 !insertmacro MUI_PAGE_INSTFILES
@@ -32,6 +33,7 @@ Page Custom func_KritaConfigPage_Show
 !include LogicLib.nsh
 !include x64.nsh
 !include WinVer.nsh
+!include WordFunc.nsh
 
 !include "include\KritaConfigPage.nsh"
 !include "include\FileExists2.nsh"
@@ -73,27 +75,31 @@ SectionEnd
 
 Section "Thing"
 	SetOutPath $INSTDIR
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayName" "${KRITASHELLEX_PRODUCTNAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-	WriteUninstaller $INSTDIR\uninstall.exe
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayVersion" "${KRITASHELLEX_VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "DisplayIcon" "$\"$INSTDIR\krita.ico$\",0"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "URLInfoAbout" "https://github.com/alvinhochun/KritaShellExtension"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "InstallLocation" "$INSTDIR"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                 "Publisher" "${KRITASHELLEX_PUBLISHER}"
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                   "EstimatedSize" 680
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                   "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
-	                   "NoRepair" 1
+	${If} $KritaNsisVersion != ""
+		WriteUninstaller $INSTDIR\uninstall.exe
+	${Else}
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "DisplayName" "${KRITASHELLEX_PRODUCTNAME}"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+		WriteUninstaller $INSTDIR\uninstall.exe
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "DisplayVersion" "${KRITASHELLEX_VERSION}"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "DisplayIcon" "$\"$INSTDIR\krita.ico$\",0"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "URLInfoAbout" "https://github.com/alvinhochun/KritaShellExtension"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "InstallLocation" "$INSTDIR"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                 "Publisher" "${KRITASHELLEX_PUBLISHER}"
+		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                   "EstimatedSize" 680
+		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                   "NoModify" 1
+		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\KritaShellExtension" \
+		                   "NoRepair" 1
+	${EndIf}
 	# Registry entries for version recognition
 	#   InstallLocation:
 	#     Where the shell extension is installed
@@ -257,11 +263,8 @@ Function .onInit
 	${EndIf}
 
 	# TODO: Allow Krita and the shell extension to be installed separately?
+	# Detects installed Krita version
 	${DetectKritaNsis} $KritaNsisVersion $KritaNsisBitness $KritaNsisInstallLocation
-	${If} $KritaNsisVersion != ""
-		MessageBox MB_OK|MB_ICONSTOP "Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed.$\nThis installer will now exit."
-		Abort
-	${EndIf}
 
 	# Detect other versions of this
 	ClearErrors
@@ -272,15 +275,53 @@ Function .onInit
 	${If} ${Errors}
 		# TODO: Assume no previous version installed or what?
 	${EndIf}
-	${If} $PrevStandalone == 1
-		# Shouldn't reach this??? We've already checked for Krita version above
-		# Whatever we'll just pass
+
+	# Compare versions
+	${If} $KritaNsisVersion != ""
+		# Really shouldn't happen unless it's changed in some future version
+		# If that does happen, stop
+		${IfNot} ${FileExists} "$KritaNsisInstallLocation\bin\krita.exe"
+			MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed but setup failed to locate it.$\nThis setup will now exit."
+			Abort
+		${EndIf}
+		${If} $PrevVersion != ""
+			${If} $KritaNsisVersion == "3.0.0.0"
+				MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed, which does not support updating the Shell Integration.$\nPlease install a newer version of Krita."
+				Abort
+			${EndIf}
+			push $R0
+			${VersionCompare} "${KRITASHELLEX_VERSION}" "$PrevVersion" $R0
+			${If} $R0 == 0
+				# Same version installed... probably
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will reinstall the Shell Integration without affecting Krita."
+			${ElseIf} $R0 == 1
+				# Upgrade
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will upgrade the Shell Integration without affecting Krita."
+			${ElseIf} $R0 == 2
+				MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nIt cannot be downgraded.$\nThis setup will now exit."
+				Abort
+			${Else}
+				MessageBox MB_OK|MB_ICONSTOP "Unexpected state"
+				Abort
+			${EndIf}
+		${Else}
+			# Shell Integration not installed
+			MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is isntalled without the Shell Integration.$\nThis setup will install the Shell Integration without affecting Krita."
+		${EndIf}
+		StrCpy $KritaExePath "$KritaNsisInstallLocation\bin\krita.exe"
+		StrCpy $InstDir "$KritaNsisInstallLocation\shellex"
+	${Else}
+		${If} $PrevStandalone == 0
+			# Shouldn't reach this??? We've already checked for Krita version
+			# Whatever we'll just pass
+		${EndIf}
+		StrCpy $InstDir $PrevInstallLocation
 	${EndIf}
+
 	${If} $KritaExePath == ""
 	${AndIf} ${FileExists} $PrevKritaExePath
 		StrCpy $KritaExePath $PrevKritaExePath
 	${EndIf}
-	# TODO: Compare versions?
 FunctionEnd
 
 Function un.onInit
@@ -290,7 +331,19 @@ Function un.onInit
 	${Endif}
 FunctionEnd
 
+Function func_InstallDirPage_Pre
+	${If} $KritaNsisVersion != ""
+		Abort
+	${EndIf}
+FunctionEnd
+
 # ----[[
+
+Function func_KritaConfigPage_Pre
+	${If} $KritaNsisVersion != ""
+		Abort
+	${EndIf}
+FunctionEnd
 
 Function func_KritaConfigPage_Init
 	${NSD_SetText} $hCtl_KritaConfigPage_TextBoxKritaExePath $KritaExePath

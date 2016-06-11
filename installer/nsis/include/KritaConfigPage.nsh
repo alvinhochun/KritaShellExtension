@@ -9,6 +9,7 @@ Var hCtl_KritaConfigPage_ButtonBrowseKritaExe
 
 ; dialog create function
 Function func_KritaConfigPage_Create
+	Call func_KritaConfigPage_Pre
 
 	; === KritaConfigPage (type: Dialog) ===
 	nsDialogs::Create 1018
