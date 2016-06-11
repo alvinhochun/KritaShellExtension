@@ -52,6 +52,9 @@ System Requirements
 This shell extension requires Windows Vista or above. It does not
 work on Windows XP and previous versions of Windows.
 
+The released installer checks for Windows 7 or above, so it can not
+be used directly on Windows Vista.
+
 The binaries were compiled using Visual Studio 2015. They are linked
 statically against the C++ runtime, so no extra runtime libraries are
 needed for this to work.
@@ -62,31 +65,7 @@ Installing
 
 Executing the installer should work without any trouble.
 
-If you would like to install the shell extension manually, please
-follow these steps:
-
-1. Place kritashellex32.dll (and also kritashellex64.dll if you are
-  running a 64-bit Windows system) in a location that is accessible
-  by all users.
-2. (Optional:) Set the access rights of the two dll files to be
-  read-only by all users.
-3. Start a command prompt with administrative rights.
-4. Change to the location where the two dll files are located at.
-5. Execute `regsvr32 kritashellex32.dll` (without quotes.)
-6. (For 64-bit system only:) Execute `regsvr32 kritashellex64.dll`
-
-If you would like to uninstall the shell extension manually, please
-follow these steps:
-
-1. Start a command prompt with administrative rights.
-2. Change to the location where the two dll files are located at.
-3. Execute `regsvr32 /u kritashellex32.dll` (without quotes.)
-4. (For 64-bit system only:) Execute `regsvr32 /u kritashellex64.dll`
-5. Delete the two dll files.
-
-Additional registry changes are needed for properties from the
-property handler to show up in Windows Explorer. You can refer to the
-GitHub Wiki page or the NSIS installer scripts.
+Installing the shell extensions by `regsvr32` is *not* supported.
 
 
 Using
@@ -148,12 +127,12 @@ Additional Information
 
 ### KritaThumbnailProvider ###
 
-Provides preview thumbnail for .kra files.
+Provides preview thumbnail for .kra and .ora files.
 
 ### KritaPropertyHandler ###
 
-Provides image file properties for .kra files. Additional registry
-changes are needed for it to work the best.
+Provides image file properties for .kra and .ora files. Additional
+registry changes are needed for it to work the best.
 
 ### zip_source_IStream ###
 
