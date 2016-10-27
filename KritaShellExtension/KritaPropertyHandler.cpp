@@ -109,7 +109,8 @@ IFACEMETHODIMP KritaPropertyHandler::Initialize(IStream *pStream_, DWORD grfMode
 	if (!src) {
 		return E_NOTIMPL;
 	}
-	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, nullptr));
+	zip_error_t zip_error;
+	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_CHECKCONS | ZIP_RDONLY, &zip_error));
 	if (!zf) {
 		return E_NOTIMPL;
 	}
