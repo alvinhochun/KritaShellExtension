@@ -70,6 +70,11 @@ include_directories(${zlib_INCLUDE_DIRS})
 include_directories(${tinyxml2_INCLUDE_DIRS})
 
 add_library(kritashellex SHARED ${KRITASHELLEX_SRCS} ${KRITASHELLEX_HEADERS})
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+set_target_properties(kritashellex PROPERTIES OUTPUT_NAME "kritashellex64")
+else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+set_target_properties(kritashellex PROPERTIES OUTPUT_NAME "kritashellex32")
+endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 target_link_libraries(kritashellex ${libzip_LIBRARY} ${tinyxml2_LIBRARY})
 target_link_libraries(kritashellex
 	$<$<CONFIG:Debug>:${zlib_LIBRARY_DEBUG}>
