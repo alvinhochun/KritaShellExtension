@@ -115,9 +115,6 @@ or
 
 depending on the generator you use.
 
-You should rename the output files into `kritashellex32.dll` and
-`kritashellex64.dll` to avoid confusion.
-
 To build the NSIS installer, refer to the readme file under
 `installer/nsis`.
 
