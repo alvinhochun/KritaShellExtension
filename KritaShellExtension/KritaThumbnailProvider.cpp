@@ -101,16 +101,16 @@ IFACEMETHODIMP KritaThumbnailProvider::Initialize(IStream *pStream, DWORD grfMod
 
 	zip_ptr<zip_source_t> src(zip_source_IStream_create(pStream, nullptr));
 	if (!src) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	zip_error_t zip_error;
 	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, &zip_error));
 	if (!zf) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf), std::move(src)));
 	if (!pDocument->Init()) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	m_pDocument = std::move(pDocument);
 
@@ -181,7 +181,7 @@ HRESULT KritaThumbnailProvider::getBitmapFromArchiveForThumbnail(UINT cx, std::u
 		hr = getBitmapFromArchiveByName("Thumbnails/thumbnail.png", pImageBitmap_out); 
 		break;
 	default:
-		hr = E_NOTIMPL;
+		hr = E_FAIL;
 	}
 
 	if (SUCCEEDED(hr)) {
@@ -255,7 +255,7 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(const char *con
 {
 	size_t imageSize;
 	if (!m_pDocument->getFileSize(filename, imageSize)) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 
 	hImageContent_out = GlobalAlloc(GMEM_MOVEABLE, imageSize);
@@ -271,7 +271,7 @@ HRESULT KritaThumbnailProvider::getThumbnailPngFromArchiveByName(const char *con
 	if (!m_pDocument->getFileContent(filename, static_cast<char *>(pImageContent), imageSize)) {
 		GlobalUnlock(hImageContent_out);
 		GlobalFree(hImageContent_out);
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 
 	GlobalUnlock(hImageContent_out);

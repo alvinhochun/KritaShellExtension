@@ -107,16 +107,16 @@ IFACEMETHODIMP KritaPropertyHandler::Initialize(IStream *pStream_, DWORD grfMode
 
 	zip_ptr<zip_source_t> src(zip_source_IStream_create(m_pStream, nullptr));
 	if (!src) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	zip_error_t zip_error;
 	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, &zip_error));
 	if (!zf) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf), std::move(src)));
 	if (!pDocument->Init()) {
-		return E_NOTIMPL;
+		return E_FAIL;
 	}
 	m_pDocument = std::move(pDocument);
 
