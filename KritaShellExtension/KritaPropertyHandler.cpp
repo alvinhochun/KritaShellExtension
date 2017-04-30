@@ -112,6 +112,8 @@ IFACEMETHODIMP KritaPropertyHandler::Initialize(IStream *pStream_, DWORD grfMode
 	zip_error_t zip_error;
 	zip_ptr<zip_t> zf(zip_open_from_source(src.get(), ZIP_RDONLY, &zip_error));
 	if (!zf) {
+		// Need to free manually after zip_open failed
+		zip_source_free(src.release());
 		return E_FAIL;
 	}
 	std::unique_ptr<Document> pDocument(new (std::nothrow) Document(std::move(zf), std::move(src)));
