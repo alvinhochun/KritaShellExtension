@@ -4,13 +4,15 @@ Krita Shell Extension
 Shell Extension to provide various information about Krita files in
 Windows Explorer.
 
+You can download Krita at https://krita.org/
+
 
 License
 -------
 
 The MIT License
 
-Copyright (c) 2016 Alvin Wong <alvinhochun@gmail.com>
+Copyright (c) 2016-2017 Alvin Wong <alvinhochun@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -88,7 +90,7 @@ manually by replacing `deps/CMakeLists.txt` with
 `deps/CMakeLists_uselocal.txt`. Note that you may need to change the
 CMakeLists.txt of libzip manually to add the static library target.
 
-You have to build the 32-bit and 64-bot versions separately. Using an
+You have to build the 32-bit and 64-bit versions separately. Using an
 out-of-source build location is recommended.
 
 Example build commands:
@@ -107,13 +109,13 @@ Currently, the project does not include an install target. You will
 have to copy the output manually or using an external script. The
 output DLL is located at
 
-	<build_dir>\KritaShellExtension\<config>\kritashellex.dll
+	<build_dir>\KritaShellExtension\<config>\kritashellex##.dll
 
 or
 
-	<build_dir>\KritaShellExtension\kritashellex.dll
+	<build_dir>\KritaShellExtension\kritashellex##.dll
 
-depending on the generator you use.
+depending on the generator you use, where ## is the target architecture.
 
 To build the NSIS installer, refer to the readme file under
 `installer/nsis`.
