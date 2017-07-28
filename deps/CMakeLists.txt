@@ -26,8 +26,8 @@ endif()
 include(ExternalProject)
 
 ExternalProject_Add(dep_zlib
-	URL http://zlib.net/zlib-1.2.8.tar.gz
-	URL_MD5 44d667c142d7cda120332623eab69f40
+	URL http://zlib.net/zlib-1.2.11.tar.gz
+	URL_HASH SHA256=c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1
 	CMAKE_ARGS
 		-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 		-DCMAKE_INSTALL_PREFIX=${PREFIX_DEPS}
