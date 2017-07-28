@@ -7,7 +7,7 @@
 !define RefreshShell '!insertmacro RefreshShell_Macro'
 
 # Shell extension constants
-!define KRITASHELLEX_VERSION "1.2.3.0"
+!define KRITASHELLEX_VERSION "1.2.4.0"
 !getdllversion "kritashellex32.dll" KRITASHELLEX_DLLVER_32_
 !define KRITASHELLEX_DLLVER_32 "${KRITASHELLEX_DLLVER_32_1}.${KRITASHELLEX_DLLVER_32_2}.${KRITASHELLEX_DLLVER_32_3}.${KRITASHELLEX_DLLVER_32_4}"
 !getdllversion "kritashellex64.dll" KRITASHELLEX_DLLVER_64_
