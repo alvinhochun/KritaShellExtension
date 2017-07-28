@@ -172,7 +172,7 @@ bool Document::parseKraMaindocXml(std::unique_ptr<char[]> pMaindoc, size_t maind
 	catch (std::bad_alloc) {
 		return false;
 	}
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
@@ -190,22 +190,22 @@ bool Document::parseKraMaindocXml(std::unique_ptr<char[]> pMaindoc, size_t maind
 	}
 
 	err = elemImage->QueryUnsignedAttribute("width", &m_width);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
 	err = elemImage->QueryUnsignedAttribute("height", &m_height);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
 	err = elemImage->QueryDoubleAttribute("x-res", &m_xRes);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
 	err = elemImage->QueryDoubleAttribute("y-res", &m_yRes);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
@@ -223,7 +223,7 @@ bool Document::parseOraStackXml(std::unique_ptr<char[]> pStackXml, size_t pStack
 	catch (std::bad_alloc) {
 		return false;
 	}
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
@@ -236,12 +236,12 @@ bool Document::parseOraStackXml(std::unique_ptr<char[]> pStackXml, size_t pStack
 	}
 
 	err = elemImage->QueryUnsignedAttribute("w", &m_width);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 
 	err = elemImage->QueryUnsignedAttribute("h", &m_height);
-	if (err != tinyxml2::XML_NO_ERROR) {
+	if (err != tinyxml2::XML_SUCCESS) {
 		return false;
 	}
 

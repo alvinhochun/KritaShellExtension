@@ -70,7 +70,7 @@ ExternalProject_Add(dep_libzip
 
 ExternalProject_Add(dep_tinyxml2
 	GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
-	GIT_TAG d175e9de0be0d4db75d0a8cf065599a435a87eb6
+	GIT_TAG f3f9925f1229873930a526c507f8721f74f1e80d
 	CMAKE_ARGS
 		-DBUILD_SHARED_LIBS=OFF
 		-DBUILD_STATIC_LIBS=ON
