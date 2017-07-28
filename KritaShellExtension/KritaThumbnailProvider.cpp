@@ -144,6 +144,7 @@ IFACEMETHODIMP KritaThumbnailProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS
 		std::unique_ptr<Gdiplus::Bitmap> pImageBitmap;
 		hr = getBitmapFromArchiveForThumbnail(cx, pImageBitmap);
 		if (FAILED(hr)) {
+			pImageBitmap.reset();
 			Gdiplus::GdiplusShutdown(token);
 			return hr;
 		}
