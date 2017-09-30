@@ -109,6 +109,7 @@ Page Custom func_BeforeInstallPage_Init
 !define KRITA_SHELLEX_DIR "$INSTDIR\shellex"
 
 !include "include\FileExists2.nsh"
+!include "include\IsFileInUse.nsh"
 !include "krita_versions_detect.nsh"
 !include "krita_shell_integration.nsh"
 
@@ -478,6 +479,13 @@ Function .onInit
 			Abort
 		${EndIf}
 		!insertmacro SetSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
+		# Detect if Krita is running...
+		${If} ${IsFileinUse} "$KritaNsisInstallLocation\bin\krita.exe"
+			${IfNot} ${Silent}
+				MessageBox MB_OK|MB_ICONEXCLAMATION "Krita appears to be running. Please close Krita before running this installer."
+			${EndIf}
+			Abort
+		${EndIf}
 		pop $R0
 	${Else}
 		!insertmacro ClearSectionFlag ${SEC_remove_old_version} ${SF_SELECTED}
@@ -521,6 +529,12 @@ Function un.onInit
 	${Endif}
 !endif
 	ReadRegDWORD $UninstallShellExStandalone HKLM "Software\Krita\ShellExtension" "Standalone"
+	${If} ${IsFileinUse} "$INSTDIR\bin\krita.exe"
+		${IfNot} ${Silent}
+			MessageBox MB_OK|MB_ICONEXCLAMATION "Krita appears to be running. Please close Krita before uninstalling."
+		${EndIf}
+		Abort
+	${EndIf}
 FunctionEnd
 
 Function func_ShellExLicensePage_Init
