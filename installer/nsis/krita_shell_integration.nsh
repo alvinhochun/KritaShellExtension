@@ -7,10 +7,11 @@
 !define RefreshShell '!insertmacro RefreshShell_Macro'
 
 # Shell extension constants
+!define /ifndef KRITASHELLEX_DLL_SOURCE_DIR ""
 !define KRITASHELLEX_VERSION "1.2.4.0"
-!getdllversion "kritashellex32.dll" KRITASHELLEX_DLLVER_32_
+!getdllversion "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex32.dll" KRITASHELLEX_DLLVER_32_
 !define KRITASHELLEX_DLLVER_32 "${KRITASHELLEX_DLLVER_32_1}.${KRITASHELLEX_DLLVER_32_2}.${KRITASHELLEX_DLLVER_32_3}.${KRITASHELLEX_DLLVER_32_4}"
-!getdllversion "kritashellex64.dll" KRITASHELLEX_DLLVER_64_
+!getdllversion "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex64.dll" KRITASHELLEX_DLLVER_64_
 !define KRITASHELLEX_DLLVER_64 "${KRITASHELLEX_DLLVER_64_1}.${KRITASHELLEX_DLLVER_64_2}.${KRITASHELLEX_DLLVER_64_3}.${KRITASHELLEX_DLLVER_64_4}"
 !if ${KRITASHELLEX_DLLVER_32} != ${KRITASHELLEX_DLLVER_64}
 	!error "kritashellex32.dll (${KRITASHELLEX_DLLVER_32}) and kritashellex64.dll (${KRITASHELLEX_DLLVER_64}) version mismatch. ${KRITASHELLEX_VERSION} is expected."
@@ -27,7 +28,7 @@
 
 !macro Krita_RegisterComComonents_Macro Bits
 	SetRegView ${Bits}
-	File "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll" kritashellex${Bits}.dll
+	File "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll" "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex${Bits}.dll"
 	# Register Thumbnail Provider
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
 	                 "" "Krita Thumbnail Provider"
