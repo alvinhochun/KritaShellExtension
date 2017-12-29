@@ -3,7 +3,9 @@ Unicode true
 !define KRITASHELLEX_PRODUCTNAME "Krita Shell Integration"
 !define KRITASHELLEX_PUBLISHER "Alvin Wong"
 
-OutFile "kritashellex_setup.exe"
+!define /ifndef KRITASHELLEX_INSTALLER_OUTPUT "kritashellex_setup.exe"
+
+OutFile "${KRITASHELLEX_INSTALLER_OUTPUT}"
 Name "${KRITASHELLEX_PRODUCTNAME}"
 XPstyle on
 
