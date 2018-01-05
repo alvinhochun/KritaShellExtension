@@ -77,7 +77,7 @@ Var CreateDesktopIcon
 # Installer Pages
 !insertmacro MUI_PAGE_WELCOME
 !define MUI_LICENSEPAGE_CHECKBOX
-!insertmacro MUI_PAGE_LICENSE "license_gpl-2.0.rtf"
+!insertmacro MUI_PAGE_LICENSE "license_gpl-3.0.rtf"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !define MUI_PAGE_CUSTOMFUNCTION_PRE  func_ShellExLicensePage_Init
