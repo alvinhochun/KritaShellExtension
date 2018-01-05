@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 :: Builds the shell extension and installer
 
 set KRITASHELLEX_VERSION_STRING=dev
-::set KRITASHELLEX_VERSION_STRING=v1.2.4
+::set KRITASHELLEX_VERSION_STRING=v1.2.4a
 set CMAKE_EXE=cmake.exe
 set MAKENSIS_EXE=C:\Program Files (x86)\NSIS\makensis.exe
 set SEVENZIP_EXE=%ProgramFiles%\7-Zip\7z.exe
