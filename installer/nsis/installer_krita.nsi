@@ -16,6 +16,7 @@
 !endif
 
 Unicode true
+ManifestDPIAware true
 
 # Krita constants (can be overridden in command line params)
 !define /ifndef KRITA_VERSION "0.0.0.0"

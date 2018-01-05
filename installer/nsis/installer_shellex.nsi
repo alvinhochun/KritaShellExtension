@@ -1,4 +1,5 @@
 Unicode true
+ManifestDPIAware true
 
 !define KRITASHELLEX_PRODUCTNAME "Krita Shell Integration"
 !define KRITASHELLEX_PUBLISHER "Alvin Wong"
