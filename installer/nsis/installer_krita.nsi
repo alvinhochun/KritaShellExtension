@@ -221,6 +221,7 @@ Section "${KRITA_PRODUCTNAME}" SEC_product_main
 	File /r ${KRITA_PACKAGE_ROOT}\bin
 	File /r ${KRITA_PACKAGE_ROOT}\lib
 	File /r ${KRITA_PACKAGE_ROOT}\share
+	File /r ${KRITA_PACKAGE_ROOT}\python
 SectionEnd
 
 Section "-Main_associate"
@@ -330,6 +331,7 @@ Section "un.${KRITA_PRODUCTNAME}"
 	RMDir /r $INSTDIR\bin
 	RMDir /r $INSTDIR\lib
 	RMDir /r $INSTDIR\share
+	RMDir /r $INSTDIR\python
 SectionEnd
 
 Section "un.Thing"
