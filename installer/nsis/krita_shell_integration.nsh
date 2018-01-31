@@ -101,9 +101,9 @@
 	                 "Content Type" "image/openraster"
 	# Register ProgId
 	WriteRegStr HKCR "Krita.Document" \
-	                 "" "Krita Image File"
+	                 "" "Krita Image Document"
 	WriteRegStr HKCR "Krita.Document" \
-	                 "FriendlyTypeName" "Krita Image File"
+	                 "FriendlyTypeName" "Krita Image Document"
 	WriteRegStr HKCR "Krita.Document\DefaultIcon" \
 	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
 	WriteRegStr HKCR "Krita.OpenRaster" \
