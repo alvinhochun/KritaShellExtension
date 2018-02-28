@@ -26,6 +26,40 @@
 !define KRITASHELLEX_CLSID_THUMBNAILPROVIDER "{C6806289-D605-4AFE-A778-BC584303DB9A}"
 !define KRITASHELLEX_CLSID_PROPERTYHANDLER "{C8E5509D-6F68-480C-8A41-DB64AECE94C6}"
 
+!macro ForEachGenericImage_Macro _var
+	!ifdef ForEachGenericImage_inBlock
+		!error "Previous ForEachGenericImage not closed"
+	!endif
+	!define ForEachGenericImage_inBlock
+	Push ""
+	Push ".jpg"
+	Push ".jpeg"
+	Push ".png"
+	Push ".gif"
+	Push ".tif"
+	Push ".tiff"
+	Push ".psd"
+	Push ".xcf"
+	Push ".exr"
+	Push ".bmp"
+	${Do}
+		Pop "${_var}"
+		${If} "${_var}" == ""
+			${Break}
+		${EndIf}
+!macroend
+!define ForEachGenericImage "!insertmacro ForEachGenericImage_Macro"
+
+!macro EndForEachGenericImage_Macro
+	!ifndef ForEachGenericImage_inBlock
+		!error "EndForEachGenericImage when not in block"
+	!endif
+	${Loop}
+	!undef ForEachGenericImage_inBlock
+	!define /redef /math ForEachGenericImage_counter "${ForEachGenericImage_inBlock}" + 1
+!macroend
+!define EndForEachGenericImage "!insertmacro EndForEachGenericImage_Macro"
+
 !macro Krita_RegisterComComonents_Macro Bits
 	SetRegView ${Bits}
 	File "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll" "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex${Bits}.dll"
@@ -112,6 +146,12 @@
 	                 "FriendlyTypeName" "OpenRaster Image Document"
 	WriteRegStr HKCR "Krita.OpenRaster\DefaultIcon" \
 	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
+	WriteRegStr HKCR "Krita.GenericImage" \
+	                 "" "Image File"
+	WriteRegStr HKCR "Krita.GenericImage" \
+	                 "FriendlyTypeName" "Image File"
+	WriteRegStr HKCR "Krita.GenericImage\DefaultIcon" \
+	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
 	# Set Thumbnail Overlay
 	# Do this even if not installing thumbnail handler, since thumbnails
 	# will show as long as they exist in the thumbnail cache, and if the
@@ -120,6 +160,8 @@
 	WriteRegStr HKCR "Krita.Document" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	WriteRegStr HKCR "Krita.OpenRaster" \
+	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+	WriteRegStr HKCR "Krita.GenericImage" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	${If} ${KritaExePath} != ""
 		# Open Command
@@ -131,11 +173,21 @@
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKCR "Krita.OpenRaster\shell\open" \
 						 "FriendlyAppName" "Krita"
+		WriteRegStr HKCR "Krita.GenericImage\shell\open\command" \
+						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		WriteRegStr HKCR "Krita.GenericImage\shell\open" \
+						 "FriendlyAppName" "Krita"
 		#Register OpenWithProgIds
 		WriteRegStr HKCR ".kra\OpenWithProgIds" \
 						 "Krita.Document" ""
 		WriteRegStr HKCR ".ora\OpenWithProgIds" \
 						 "Krita.OpenRaster" ""
+		Push $0
+		${ForEachGenericImage} $0
+			WriteRegStr HKCR "$0\OpenWithProgIds" \
+							 "Krita.GenericImage" ""
+		${EndForEachGenericImage}
+		Pop $0
 		# Default Program (Vista+)
 		WriteRegStr HKLM "Software\Krita\Capabilities" \
 		                 "ApplicationDescription" "The free sketching and painting program."
@@ -153,6 +205,12 @@
 		                 "application/x-krita" "Krita.Document"
 		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
 		                 "image/openraster" "Krita.OpenRaster"
+		Push $0
+		${ForEachGenericImage} $0
+			WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
+			                 "$0" "Krita.GenericImage"
+		${EndForEachGenericImage}
+		Pop $0
 		WriteRegStr HKLM "Software\Krita\Capabilities\shell\open\command" \
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKLM "Software\Krita\Capabilities\shell\open" \
@@ -167,6 +225,12 @@
 						 ".kra" ""
 		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
 						 ".ora" ""
+		Push $0
+		${ForEachGenericImage} $0
+			WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
+							 "$0" ""
+		${EndForEachGenericImage}
+		Pop $0
 		#WriteRegStr HKCR "Applications\krita.exe\DefaultIcon" \
 		#                 "" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 		WriteRegStr HKCR "Applications\krita.exe\shell\open\command" \
@@ -183,16 +247,25 @@
 	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.OpenRaster" "TypeOverlay"
+	DeleteRegValue HKCR "Krita.GenericImage" "TypeOverlay"
 	# TODO: Maybe refine these a bit
 	DeleteRegValue HKLM "Software\RegisteredApplications" "Krita"
 	DeleteRegKey HKLM "Software\Krita\Capabilities"
 	DeleteRegKey HKCR "Applications\krita.exe"
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR ".ora"
+	Push $0
+	${ForEachGenericImage} $0
+		DeleteRegValue HKCR "$0\OpenWithProgIds" "Krita.GenericImage"
+		# TODO: Delete only if there are no subkeys and values
+		# /ifempty only check for subkeys but ignores all values
+		#DeleteRegKey /ifempty HKCR "$0\OpenWithProgIds"
+		#DeleteRegKey /ifempty HKCR "$0"
+	${EndForEachGenericImage}
+	Pop $0
 	DeleteRegKey HKCR "Krita.Document"
 	DeleteRegKey HKCR "Krita.OpenRaster"
-	# TODO: .ora
-	# TODO: MINE types
+	DeleteRegKey HKCR "Krita.GenericImage"
 !macroend
 !define Krita_UnregisterFileAssociation '!insertmacro Krita_UnregisterFileAssociation_Macro'
 
