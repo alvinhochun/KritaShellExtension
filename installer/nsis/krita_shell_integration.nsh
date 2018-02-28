@@ -146,6 +146,12 @@
 	                 "FriendlyTypeName" "OpenRaster Image Document"
 	WriteRegStr HKCR "Krita.OpenRaster\DefaultIcon" \
 	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
+	WriteRegStr HKCR "Krita.PaintopPreset" \
+	                 "" "Krita Brush Preset File"
+	WriteRegStr HKCR "Krita.PaintopPreset" \
+	                 "FriendlyTypeName" "Krita Brush Preset File"
+	WriteRegStr HKCR "Krita.PaintopPreset\DefaultIcon" \
+	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
 	WriteRegStr HKCR "Krita.GenericImage" \
 	                 "" "Image File"
 	WriteRegStr HKCR "Krita.GenericImage" \
@@ -161,6 +167,8 @@
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	WriteRegStr HKCR "Krita.OpenRaster" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+	WriteRegStr HKCR "Krita.PaintopPreset" \
+	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	WriteRegStr HKCR "Krita.GenericImage" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	${If} ${KritaExePath} != ""
@@ -173,6 +181,10 @@
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKCR "Krita.OpenRaster\shell\open" \
 						 "FriendlyAppName" "Krita"
+		WriteRegStr HKCR "Krita.PaintopPreset\shell\open\command" \
+						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		WriteRegStr HKCR "Krita.PaintopPreset\shell\open" \
+						 "FriendlyAppName" "Krita"
 		WriteRegStr HKCR "Krita.GenericImage\shell\open\command" \
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKCR "Krita.GenericImage\shell\open" \
@@ -182,6 +194,8 @@
 						 "Krita.Document" ""
 		WriteRegStr HKCR ".ora\OpenWithProgIds" \
 						 "Krita.OpenRaster" ""
+		WriteRegStr HKCR ".kpp\OpenWithProgIds" \
+						 "Krita.PaintopPreset" ""
 		Push $0
 		${ForEachGenericImage} $0
 			WriteRegStr HKCR "$0\OpenWithProgIds" \
@@ -205,6 +219,8 @@
 		                 "application/x-krita" "Krita.Document"
 		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
 		                 "image/openraster" "Krita.OpenRaster"
+		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
+		                 ".kpp" "Krita.PaintopPreset"
 		Push $0
 		${ForEachGenericImage} $0
 			WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
@@ -225,6 +241,8 @@
 						 ".kra" ""
 		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
 						 ".ora" ""
+		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
+						 ".kpp" ""
 		Push $0
 		${ForEachGenericImage} $0
 			WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
@@ -247,6 +265,7 @@
 	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.OpenRaster" "TypeOverlay"
+	DeleteRegValue HKCR "Krita.PaintopPreset" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.GenericImage" "TypeOverlay"
 	# TODO: Maybe refine these a bit
 	DeleteRegValue HKLM "Software\RegisteredApplications" "Krita"
@@ -254,6 +273,7 @@
 	DeleteRegKey HKCR "Applications\krita.exe"
 	DeleteRegKey HKCR ".kra"
 	DeleteRegKey HKCR ".ora"
+	DeleteRegValue HKCR ".kpp\OpenWithProgIds" "Krita.PaintopPreset"
 	Push $0
 	${ForEachGenericImage} $0
 		DeleteRegValue HKCR "$0\OpenWithProgIds" "Krita.GenericImage"
@@ -265,6 +285,7 @@
 	Pop $0
 	DeleteRegKey HKCR "Krita.Document"
 	DeleteRegKey HKCR "Krita.OpenRaster"
+	DeleteRegKey HKCR "Krita.PaintopPreset"
 	DeleteRegKey HKCR "Krita.GenericImage"
 !macroend
 !define Krita_UnregisterFileAssociation '!insertmacro Krita_UnregisterFileAssociation_Macro'
