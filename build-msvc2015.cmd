@@ -10,7 +10,7 @@ set MAKENSIS_EXE=C:\Program Files (x86)\NSIS\makensis.exe
 set SEVENZIP_EXE=%ProgramFiles%\7-Zip\7z.exe
 
 :: Do not modify for release builds! You can use "Debug" for debug builds.
-set BUILD_CONFIGURATION=Release
+set BUILD_CONFIGURATION=RelWithDebInfo
 
 mkdir build
 mkdir build\x86
@@ -33,7 +33,9 @@ popd
 
 pushd output
 copy /y ..\build\x86\KritaShellExtension\%BUILD_CONFIGURATION%\kritashellex32.dll .
+copy /y ..\build\x86\KritaShellExtension\%BUILD_CONFIGURATION%\kritashellex32.pdb .
 copy /y ..\build\x64\KritaShellExtension\%BUILD_CONFIGURATION%\kritashellex64.dll .
+copy /y ..\build\x64\KritaShellExtension\%BUILD_CONFIGURATION%\kritashellex64.pdb .
 "%MAKENSIS_EXE%" ^
     /DKRITASHELLEX_DLL_SOURCE_DIR=!CD!\ ^
     /DKRITASHELLEX_INSTALLER_OUTPUT=!CD!\KritaShellExtension-!KRITASHELLEX_VERSION_STRING!-setup.exe ^
@@ -49,7 +51,9 @@ copy /y ..\README.md README.txt
 
 :: Prepare Krita installer package
 copy /y kritashellex32.dll .\krita-nsis\
+copy /y kritashellex32.pdb .\krita-nsis\
 copy /y kritashellex64.dll .\krita-nsis\
+copy /y kritashellex64.pdb .\krita-nsis\
 type COPYING.txt > .\krita-nsis\COPYING.txt
 echo. >> .\krita-nsis\COPYING.txt
 echo ## libzip: >> .\krita-nsis\COPYING.txt

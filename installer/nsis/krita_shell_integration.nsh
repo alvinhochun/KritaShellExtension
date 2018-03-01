@@ -63,6 +63,7 @@
 !macro Krita_RegisterComComonents_Macro Bits
 	SetRegView ${Bits}
 	File "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll" "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex${Bits}.dll"
+	File /nonfatal "/oname=${KRITA_SHELLEX_DIR}\kritashellex${Bits}.pdb" "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex${Bits}.pdb"
 	# Register Thumbnail Provider
 	WriteRegStr HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}" \
 	                 "" "Krita Thumbnail Provider"
@@ -93,6 +94,7 @@
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	${RefreshShell}
 	Sleep 200
+	Delete ${KRITA_SHELLEX_DIR}\kritashellex${Bits}.pdb
 	# Try deleting, rename if failed
 	ClearErrors
 	Delete ${KRITA_SHELLEX_DIR}\kritashellex${Bits}.dll
