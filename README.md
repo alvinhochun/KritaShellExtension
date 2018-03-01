@@ -12,7 +12,7 @@ License
 
 The MIT License
 
-Copyright (c) 2016-2017 Alvin Wong <alvinhochun@gmail.com>
+Copyright (c) 2016-2018 Alvin Wong <alvinhochun@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
