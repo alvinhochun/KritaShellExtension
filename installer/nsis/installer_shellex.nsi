@@ -179,7 +179,9 @@ SectionEnd
 Function .onInit
 	SetShellVarContext all
 	${IfNot} ${AtLeastWin7}
-		MessageBox MB_OK|MB_ICONSTOP "${KRITASHELLEX_PRODUCTNAME} requires Windows 7 or above."
+		${IfNot} ${Silent}
+			MessageBox MB_OK|MB_ICONSTOP "${KRITASHELLEX_PRODUCTNAME} requires Windows 7 or above."
+		${EndIf}
 		Abort
 	${EndIf}
 	${If} ${RunningX64}
@@ -200,9 +202,11 @@ Function .onInit
 	${If} ${RunningX64}
 		${DetectKritaMsi64bit} $KritaMsiProductX64
 		${IfKritaMsi3Alpha} $KritaMsiProductX64
-			MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita 3.0 Alpha 1 is installed. It must be removed before ${KRITASHELLEX_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
-			           /SD IDYES \
-			           IDYES lbl_removeKrita3alpha
+			${IfNot} ${Silent}
+				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita 3.0 Alpha 1 is installed. It must be removed before ${KRITASHELLEX_PRODUCTNAME} can be installed.$\nDo you wish to remove it now?" \
+				           /SD IDYES \
+				           IDYES lbl_removeKrita3alpha
+			${EndIf}
 			Abort
 			lbl_removeKrita3alpha:
 			push $R0
@@ -215,53 +219,59 @@ Function .onInit
 			StrCpy $KritaMsiProductX64 ""
 		${ElseIf} $KritaMsiProductX64 != ""
 			${If} $KritaMsiProductX86 != ""
-				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nYou are strongly recommended to uninstall both of them.$\nDo you want to remove them now?" \
-				           /SD IDYES \
-				           IDNO lbl_noremoveKritaBoth
-				push $R0
-				${MsiUninstall} $KritaMsiProductX86 $R0
-				${If} $R0 != 0
-					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
-					Abort
+				${IfNot} ${Silent}
+					MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Both 32-bit and 64-bit editions of Krita 2.9 or below are installed.$\nYou are strongly recommended to uninstall both of them.$\nDo you want to remove them now?" \
+					           /SD IDYES \
+					           IDNO lbl_noremoveKritaBoth
+					push $R0
+					${MsiUninstall} $KritaMsiProductX86 $R0
+					${If} $R0 != 0
+						MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
+						Abort
+					${EndIf}
+					${MsiUninstall} $KritaMsiProductX64 $R0
+					${If} $R0 != 0
+						MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
+						Abort
+					${EndIf}
+					pop $R0
+					StrCpy $KritaMsiProductX86 ""
+					StrCpy $KritaMsiProductX64 ""
 				${EndIf}
-				${MsiUninstall} $KritaMsiProductX64 $R0
-				${If} $R0 != 0
-					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
-					Abort
-				${EndIf}
-				pop $R0
-				StrCpy $KritaMsiProductX86 ""
-				StrCpy $KritaMsiProductX64 ""
 				lbl_noremoveKritaBoth:
 			${Else}
-				MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
-				           /SD IDYES \
-				           IDNO lbl_noremoveKritaX64
-				push $R0
-				${MsiUninstall} $KritaMsiProductX64 $R0
-				${If} $R0 != 0
-					MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
-					Abort
+				${IfNot} ${Silent}
+					MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (64-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
+					           /SD IDYES \
+					           IDNO lbl_noremoveKritaX64
+					push $R0
+					${MsiUninstall} $KritaMsiProductX64 $R0
+					${If} $R0 != 0
+						MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (64-bit)."
+						Abort
+					${EndIf}
+					pop $R0
+					StrCpy $KritaMsiProductX64 ""
 				${EndIf}
-				pop $R0
-				StrCpy $KritaMsiProductX64 ""
 				lbl_noremoveKritaX64:
 			${EndIf}
 		${EndIf}
 	${Endif}
 	${If} $KritaMsiProductX86 != ""
 	${AndIf} $KritaMsiProductX64 == ""
-		MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
-		           /SD IDYES \
-		           IDNO lbl_noremoveKritaX86
-		push $R0
-		${MsiUninstall} $KritaMsiProductX86 $R0
-		${If} $R0 != 0
-			MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
-			Abort
+		${IfNot} ${Silent}
+			MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "Krita (32-bit) 2.9 or below is installed.$\nYou are strongly recommended to uninstall it.$\nDo you wish to remove it now?" \
+			           /SD IDYES \
+			           IDNO lbl_noremoveKritaX86
+			push $R0
+			${MsiUninstall} $KritaMsiProductX86 $R0
+			${If} $R0 != 0
+				MessageBox MB_OK|MB_ICONSTOP "Failed to remove Krita (32-bit)."
+				Abort
+			${EndIf}
+			pop $R0
+			StrCpy $KritaMsiProductX86 ""
 		${EndIf}
-		pop $R0
-		StrCpy $KritaMsiProductX86 ""
 		lbl_noremoveKritaX86:
 	${EndIf}
 
@@ -284,32 +294,46 @@ Function .onInit
 		# Really shouldn't happen unless it's changed in some future version
 		# If that does happen, stop
 		${IfNot} ${FileExists} "$KritaNsisInstallLocation\bin\krita.exe"
-			MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed but setup failed to locate it.$\nThis setup will now exit."
+			${IfNot} ${Silent}
+				MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed but setup failed to locate it.$\nThis setup will now exit."
+			${EndIf}
 			Abort
 		${EndIf}
 		${If} $PrevVersion != ""
 			${If} $KritaNsisVersion == "3.0.0.0"
-				MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed, which does not support updating the Shell Integration.$\nPlease install a newer version of Krita."
+				${IfNot} ${Silent}
+					MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is installed, which does not support updating the Shell Integration.$\nPlease install a newer version of Krita."
+				${EndIf}
 				Abort
 			${EndIf}
 			push $R0
 			${VersionCompare} "${KRITASHELLEX_VERSION}" "$PrevVersion" $R0
 			${If} $R0 == 0
 				# Same version installed... probably
-				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will reinstall the Shell Integration without affecting Krita."
+				${IfNot} ${Silent}
+					MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will reinstall the Shell Integration without affecting Krita."
+				${EndIf}
 			${ElseIf} $R0 == 1
 				# Upgrade
-				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will upgrade the Shell Integration without affecting Krita."
+				${IfNot} ${Silent}
+					MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nThis setup will upgrade the Shell Integration without affecting Krita."
+				${EndIf}
 			${ElseIf} $R0 == 2
-				MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nIt cannot be downgraded.$\nThis setup will now exit."
+				${IfNot} ${Silent}
+					MessageBox MB_OK|MB_ICONSTOP "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) with Shell Integration $PrevVersion is installed.$\nIt cannot be downgraded.$\nThis setup will now exit."
+				${EndIf}
 				Abort
 			${Else}
-				MessageBox MB_OK|MB_ICONSTOP "Unexpected state"
+				${IfNot} ${Silent}
+					MessageBox MB_OK|MB_ICONSTOP "Unexpected state"
+				${EndIf}
 				Abort
 			${EndIf}
 		${Else}
 			# Shell Integration not installed
-			MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is isntalled without the Shell Integration.$\nThis setup will install the Shell Integration without affecting Krita."
+			${IfNot} ${Silent}
+				MessageBox MB_OK|MB_ICONINFORMATION "It appears that Krita $KritaNsisVersion ($KritaNsisBitness-bit) is isntalled without the Shell Integration.$\nThis setup will install the Shell Integration without affecting Krita."
+			${EndIf}
 		${EndIf}
 		StrCpy $KritaExePath "$KritaNsisInstallLocation\bin\krita.exe"
 		StrCpy $InstDir "$KritaNsisInstallLocation\shellex"
