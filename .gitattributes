@@ -1,3 +1,9 @@
 # Windows batch files must be in CRLF to not make cmd.exe freak out
 *.cmd text eol=crlf
 *.bat text eol=crlf
+
+# Make all NSIS scripts CRLF
+*.nsi text eol=crlf
+*.nsh text eol=crlf
+
+*.rtf text eol=crlf
