@@ -42,6 +42,10 @@
 	Push ".xcf"
 	Push ".exr"
 	Push ".bmp"
+	Push ".webp"
+	Push ".heif"
+	Push ".heic"
+	Push ".avif"
 	${Do}
 		Pop "${_var}"
 		${If} "${_var}" == ""
@@ -80,6 +84,8 @@
 	                 "ThreadingModel" "Apartment"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra" \
 	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
+	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.krz" \
+	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.ora" \
 	                 "" "${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
 	SetRegView lastused
@@ -89,6 +95,7 @@
 !macro Krita_UnregisterComComonents_Macro Bits
 	SetRegView ${Bits}
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.kra"
+	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.krz"
 	DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\PropertySystem\PropertyHandlers\.ora"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	DeleteRegKey HKCR "CLSID\${KRITASHELLEX_CLSID_PROPERTYHANDLER}"
@@ -122,14 +129,21 @@
 	File "/oname=${KRITA_SHELLEX_DIR}\krita.ico" krita.ico
 	# Remove existing associations (really though?)
 	#DeleteRegKey HKCR ".kra"
+	#DeleteRegKey HKCR ".krz"
 	#DeleteRegKey HKCR ".ora"
 	#DeleteRegKey HKCR "Krita.Document"
+	#DeleteRegKey HKCR "Krita.ArchiveDocument"
 	#DeleteRegKey HKCR "Krita.OpenRaster"
 	# Register .kra
 	WriteRegStr HKCR ".kra" \
 	                 "" "Krita.Document"
 	WriteRegStr HKCR ".kra" \
 	                 "Content Type" "application/x-krita"
+	# Register .krz
+	WriteRegStr HKCR ".krz" \
+	                 "" "Krita.ArchiveDocument"
+	WriteRegStr HKCR ".krz" \
+	                 "Content Type" "application/x-krita-archive"
 	# Register .ora
 	WriteRegStr HKCR ".ora" \
 	                 "" "Krita.OpenRaster"
@@ -141,6 +155,12 @@
 	WriteRegStr HKCR "Krita.Document" \
 	                 "FriendlyTypeName" "Krita Image Document"
 	WriteRegStr HKCR "Krita.Document\DefaultIcon" \
+	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
+	                 "" "Krita Archive Image Document"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
+	                 "FriendlyTypeName" "Krita Archive Image Document"
+	WriteRegStr HKCR "Krita.ArchiveDocument\DefaultIcon" \
 	                 "" "$\"${KRITA_SHELLEX_DIR}\kritafile.ico$\",0"
 	WriteRegStr HKCR "Krita.OpenRaster" \
 	                 "" "OpenRaster Image Document"
@@ -167,6 +187,8 @@
 	# "unknown filetype" icon.
 	WriteRegStr HKCR "Krita.Document" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
+	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	WriteRegStr HKCR "Krita.OpenRaster" \
 	                 "TypeOverlay" "$\"${KRITA_SHELLEX_DIR}\krita.ico$\",0"
 	WriteRegStr HKCR "Krita.PaintopPreset" \
@@ -178,6 +200,10 @@
 		WriteRegStr HKCR "Krita.Document\shell\open\command" \
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
 		WriteRegStr HKCR "Krita.Document\shell\open" \
+						 "FriendlyAppName" "Krita"
+		WriteRegStr HKCR "Krita.ArchiveDocument\shell\open\command" \
+						 "" "$\"${KritaExePath}$\" $\"%1$\""
+		WriteRegStr HKCR "Krita.ArchiveDocument\shell\open" \
 						 "FriendlyAppName" "Krita"
 		WriteRegStr HKCR "Krita.OpenRaster\shell\open\command" \
 						 "" "$\"${KritaExePath}$\" $\"%1$\""
@@ -194,6 +220,8 @@
 		#Register OpenWithProgIds
 		WriteRegStr HKCR ".kra\OpenWithProgIds" \
 						 "Krita.Document" ""
+		WriteRegStr HKCR ".krz\OpenWithProgIds" \
+						 "Krita.ArchiveDocument" ""
 		WriteRegStr HKCR ".ora\OpenWithProgIds" \
 						 "Krita.OpenRaster" ""
 		WriteRegStr HKCR ".kpp\OpenWithProgIds" \
@@ -216,9 +244,13 @@
 		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
 		                 ".kra" "Krita.Document"
 		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
+		                 ".krz" "Krita.ArchiveDocument"
+		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
 		                 ".ora" "Krita.OpenRaster"
 		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
 		                 "application/x-krita" "Krita.Document"
+		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
+		                 "application/x-krita-archive" "Krita.ArchiveDocument"
 		WriteRegStr HKLM "Software\Krita\Capabilities\MIMEAssociations" \
 		                 "image/openraster" "Krita.OpenRaster"
 		WriteRegStr HKLM "Software\Krita\Capabilities\FileAssociations" \
@@ -241,6 +273,8 @@
 						 "FriendlyAppName" "Krita"
 		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
 						 ".kra" ""
+		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
+						 ".krz" ""
 		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
 						 ".ora" ""
 		WriteRegStr HKCR "Applications\krita.exe\SupportedTypes" \
@@ -266,6 +300,7 @@
 	Delete ${KRITA_SHELLEX_DIR}\kritafile.ico
 	Delete ${KRITA_SHELLEX_DIR}\krita.ico
 	DeleteRegValue HKCR "Krita.Document" "TypeOverlay"
+	DeleteRegValue HKCR "Krita.ArchiveDocument" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.OpenRaster" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.PaintopPreset" "TypeOverlay"
 	DeleteRegValue HKCR "Krita.GenericImage" "TypeOverlay"
@@ -274,6 +309,7 @@
 	DeleteRegKey HKLM "Software\Krita\Capabilities"
 	DeleteRegKey HKCR "Applications\krita.exe"
 	DeleteRegKey HKCR ".kra"
+	DeleteRegKey HKCR ".krz"
 	DeleteRegKey HKCR ".ora"
 	DeleteRegValue HKCR ".kpp\OpenWithProgIds" "Krita.PaintopPreset"
 	Push $0
@@ -286,6 +322,7 @@
 	${EndForEachGenericImage}
 	Pop $0
 	DeleteRegKey HKCR "Krita.Document"
+	DeleteRegKey HKCR "Krita.ArchiveDocument"
 	DeleteRegKey HKCR "Krita.OpenRaster"
 	DeleteRegKey HKCR "Krita.PaintopPreset"
 	DeleteRegKey HKCR "Krita.GenericImage"
@@ -296,10 +333,14 @@
 	# Register as IThumbnailProvider
 	WriteRegStr HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
 	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
+	WriteRegStr HKCR ".krz\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
+	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	WriteRegStr HKCR ".ora\shellex\{E357FCCD-A995-4576-B01F-234630154E96}" \
 	                 "" "${KRITASHELLEX_CLSID_THUMBNAILPROVIDER}"
 	# Set PerceivedType
 	WriteRegStr HKCR ".kra" \
+	                 "PerceivedType" "Image"
+	WriteRegStr HKCR ".krz" \
 	                 "PerceivedType" "Image"
 	WriteRegStr HKCR ".ora" \
 	                 "PerceivedType" "Image"
@@ -309,6 +350,12 @@
 	WriteRegStr HKCR "Krita.Document" \
 	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
 	WriteRegStr HKCR "Krita.Document" \
+	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
+	                 "PreviewDetails" "prop:System.DateModified;System.Size;System.DateCreated;*System.Image.Dimensions;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
+	                 "InfoTip" "prop:System.ItemTypeText;System.Image.Dimensions;*System.Size;System.DateModified"
+	WriteRegStr HKCR "Krita.ArchiveDocument" \
 	                 "FullDetails" "prop:System.Image.Dimensions;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.HorizontalResolution;System.Image.VerticalResolution;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemTypeText;System.ItemFolderPathDisplay;System.Size;System.DateCreated;System.DateModified;System.FileAttributes;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith;*System.FileOwner;*System.ComputerName"
 	WriteRegStr HKCR "Krita.OpenRaster" \
 	                 "PreviewDetails" "prop:System.DateModified;System.Size;System.DateCreated;*System.Image.Dimensions;*System.OfflineAvailability;*System.OfflineStatus;*System.SharedWith"
@@ -322,11 +369,16 @@
 !macro Krita_UnregisterShellExtension_Macro
 	DeleteRegKey HKCR ".kra\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
 	DeleteRegKey /ifempty HKCR ".kra\shellex\"
+	DeleteRegKey HKCR ".krz\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
+	DeleteRegKey /ifempty HKCR ".krz\shellex\"
 	DeleteRegKey HKCR ".ora\shellex\{E357FCCD-A995-4576-B01F-234630154E96}"
 	DeleteRegKey /ifempty HKCR ".ora\shellex\"
 	DeleteRegValue HKCR "Krita.Document" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.Document" "InfoTip"
 	DeleteRegValue HKCR "Krita.Document" "FullDetails"
+	DeleteRegValue HKCR "Krita.ArchiveDocument" "PreviewDetails"
+	DeleteRegValue HKCR "Krita.ArchiveDocument" "InfoTip"
+	DeleteRegValue HKCR "Krita.ArchiveDocument" "FullDetails"
 	DeleteRegValue HKCR "Krita.OpenRaster" "PreviewDetails"
 	DeleteRegValue HKCR "Krita.OpenRaster" "InfoTip"
 	DeleteRegValue HKCR "Krita.OpenRaster" "FullDetails"
