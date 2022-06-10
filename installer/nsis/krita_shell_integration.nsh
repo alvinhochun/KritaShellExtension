@@ -53,6 +53,7 @@
 	Push ".heif"
 	Push ".heic"
 	Push ".avif"
+	Push ".jxl"
 	${Do}
 		Pop "${_var}"
 		${If} "${_var}" == ""
