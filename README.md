@@ -12,7 +12,7 @@ License
 
 The MIT License
 
-Copyright (c) 2016-2021 Alvin Wong
+Copyright (c) 2016-2022 Alvin Wong
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

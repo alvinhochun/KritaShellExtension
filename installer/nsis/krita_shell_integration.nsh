@@ -8,7 +8,7 @@
 
 # Shell extension constants
 !define /ifndef KRITASHELLEX_DLL_SOURCE_DIR ""
-!define KRITASHELLEX_VERSION "1.2.4.3"
+!define KRITASHELLEX_VERSION "1.2.4.4"
 !getdllversion "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex32.dll" KRITASHELLEX_DLLVER_32_
 !define KRITASHELLEX_DLLVER_32 "${KRITASHELLEX_DLLVER_32_1}.${KRITASHELLEX_DLLVER_32_2}.${KRITASHELLEX_DLLVER_32_3}.${KRITASHELLEX_DLLVER_32_4}"
 !getdllversion "${KRITASHELLEX_DLL_SOURCE_DIR}kritashellex64.dll" KRITASHELLEX_DLLVER_64_
@@ -18,6 +18,11 @@
 !endif
 !if ${KRITASHELLEX_VERSION} == "1.2.4.3"
 	# HACK: in v1.2.4c we reuse the old built DLLs
+	!if "1.2.4.2" != ${KRITASHELLEX_DLLVER_32}
+		!error "Krita shell extension version 1.2.4.2 expected, got ${KRITASHELLEX_DLLVER_32} instead."
+	!endif
+!else if ${KRITASHELLEX_VERSION} == "1.2.4.4"
+	# HACK: in v1.2.4d we reuse the old built DLLs
 	!if "1.2.4.2" != ${KRITASHELLEX_DLLVER_32}
 		!error "Krita shell extension version 1.2.4.2 expected, got ${KRITASHELLEX_DLLVER_32} instead."
 	!endif
